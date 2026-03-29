@@ -1,7 +1,7 @@
 ---
 import MetricBadge from '../ui/MetricBadge.astro';
 
-const techStack = ['LangGraph', 'LangChain', 'GCP', 'MLOps', 'FastAPI'];
+const techStack = ['LLM', 'Observability', 'LangGraph', 'GCP', 'MLOps', 'FastAPI'];
 
 const metrics = [
   { value: '80%', label: 'faster processing', sublabel: '3h → 36min' },
@@ -10,11 +10,11 @@ const metrics = [
 ];
 ---
 
-<section class="relative min-h-screen flex items-center hero-mesh dot-grid overflow-hidden pt-16">
+<section class="relative flex items-center hero-mesh dot-grid overflow-hidden pt-16">
   <!-- Background gradient overlay -->
   <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg pointer-events-none"></div>
 
-  <div class="relative max-w-6xl mx-auto px-6 py-20 md:py-32 w-full">
+  <div class="relative max-w-6xl mx-auto px-6 py-12 md:py-20 w-full">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
       <!-- Left: Text content -->
@@ -51,19 +51,19 @@ const metrics = [
         </p>
 
         <!-- Metric cards -->
-        <div class="flex flex-wrap gap-4 mb-10">
-          {metrics.map((m) => (
-            <MetricBadge value={m.value} label={m.label} sublabel={m.sublabel} />
-          ))}
+        <div class="mb-10">
+          <p class="text-xs text-text-muted font-mono uppercase tracking-wider mb-3">career impact</p>
+          <div class="flex flex-wrap gap-4">
+            {metrics.map((m) => (
+              <MetricBadge value={m.value} label={m.label} sublabel={m.sublabel} />
+            ))}
+          </div>
         </div>
 
         <!-- CTAs -->
         <div class="flex flex-wrap gap-4">
           <a href="#projects" class="btn-primary">
             View Projects
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
           </a>
           <a href="#contact" class="btn-outline">
             Get In Touch
@@ -97,11 +97,6 @@ const metrics = [
             </div>
           </div>
 
-          <!-- Floating tech tag -->
-          <div class="absolute -bottom-4 -left-4 bg-surface-1 border border-accent-border rounded-xl px-4 py-2.5 shadow-xl">
-            <div class="text-xs text-text-muted font-mono mb-0.5">Currently building</div>
-            <div class="text-sm text-accent font-semibold">LLM pipelines @ ReflexAI</div>
-          </div>
         </div>
       </div>
 

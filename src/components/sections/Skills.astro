@@ -4,12 +4,11 @@ import SkillPill from '../ui/SkillPill.astro';
 import { skillGroups } from '../../data/skills';
 ---
 
-<section class="section-padding bg-surface-1/30 border-y border-border">
+<section class="section-padding">
   <div class="max-w-6xl mx-auto">
     <SectionHeader
       id="skills"
       title="Skills & Tools"
-      subtitle="Ordered by depth — not alphabetically."
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -20,7 +19,7 @@ import { skillGroups } from '../../data/skills';
           </h3>
           <div class="flex flex-wrap gap-2">
             {group.skills.map((skill) => (
-              <SkillPill name={skill.name} tier={skill.tier} colorScheme={group.colorScheme} />
+              <SkillPill name={skill.name} tier={skill.tier} years={skill.years} colorScheme={group.colorScheme} />
             ))}
           </div>
         </div>
@@ -28,7 +27,7 @@ import { skillGroups } from '../../data/skills';
     </div>
 
     <p class="text-xs text-text-muted font-mono mt-6 text-center">
-      <span class="text-accent">●</span> = core proficiency
+      years of experience shown per skill
     </p>
   </div>
 </section>

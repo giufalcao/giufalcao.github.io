@@ -11,5 +11,5 @@ const { value, label, sublabel } = Astro.props;
 <div class="metric-card text-center min-w-[120px]">
   <div class="text-2xl font-bold text-metric font-mono leading-none mb-1">{value}</div>
   <div class="text-xs text-text-secondary leading-tight">{label}</div>
-  {sublabel && <div class="text-xs text-text-muted font-mono mt-0.5">{sublabel}</div>}
+  {sublabel && <div class="text-xs text-text-muted font-mono mt-0.5 flex items-center justify-center gap-0.5">{sublabel}</div>}
 </div>

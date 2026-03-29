@@ -4,16 +4,18 @@ import TimelineItem from '../ui/TimelineItem.astro';
 import { experience } from '../../data/experience';
 ---
 
-<section class="section-padding max-w-6xl mx-auto">
+<section class="section-padding">
+  <div class="max-w-6xl mx-auto">
   <SectionHeader
     id="experience"
     title="Experience"
-    subtitle="6+ years from software engineer to senior ML engineer. Impact measured in metrics, not bullet points."
+    subtitle="Impact measured in metrics, not bullet points."
   />
 
   <div class="max-w-3xl">
     {experience.map((entry, i) => (
       <TimelineItem entry={entry} isLast={i === experience.length - 1} />
     ))}
+  </div>
   </div>
 </section>

@@ -4,10 +4,11 @@ import type { SkillTier } from '../../data/skills';
 interface Props {
   name: string;
   tier?: SkillTier;
+  years?: number;
   colorScheme?: 'emerald' | 'blue' | 'slate' | 'muted' | 'purple';
 }
 
-const { name, tier = 'proficient', colorScheme = 'muted' } = Astro.props;
+const { name, tier = 'proficient', years, colorScheme = 'muted' } = Astro.props;
 
 const schemeClasses: Record<string, string> = {
   emerald: 'bg-accent-subtle border-accent-border text-accent',
@@ -17,12 +18,10 @@ const schemeClasses: Record<string, string> = {
   purple: 'bg-purple-950/50 border-purple-800/40 text-purple-300',
 };
 
-const classes = tier === 'core'
-  ? schemeClasses[colorScheme]
-  : 'bg-surface-2 border-border text-text-muted';
+const classes = schemeClasses[colorScheme];
 ---
 
-<span class:list={['tech-pill', classes, 'text-xs font-mono px-3 py-1 rounded-full border transition-colors duration-200']}>
+<span class:list={['tech-pill', classes, 'text-xs font-mono px-3 py-1 rounded-full border transition-colors duration-200 inline-flex items-center gap-1.5']}>
   {name}
-  {tier === 'core' && <span class="ml-1 w-1.5 h-1.5 rounded-full bg-current opacity-60 inline-block"></span>}
+  {years && <span class="opacity-50">{years}y</span>}
 </span>

@@ -1,9 +1,9 @@
 ---
 const navLinks = [
   { href: '#about', label: 'About' },
-  { href: '#projects', label: 'Projects' },
   { href: '#skills', label: 'Skills' },
   { href: '#experience', label: 'Experience' },
+  { href: '#projects', label: 'Projects' },
   { href: '#contact', label: 'Contact' },
 ];
 ---
@@ -133,7 +133,7 @@ const navLinks = [
   });
 
   // Active section highlighting
-  const sections = ['about', 'projects', 'skills', 'experience', 'contact'];
+  const sections = ['about', 'skills', 'experience', 'projects', 'contact'];
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
