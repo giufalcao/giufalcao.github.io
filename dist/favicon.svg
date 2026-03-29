@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Dark background circle -->
+  <circle cx="32" cy="32" r="32" fill="hsl(222, 20%, 8%)"/>
+  <!-- Hexagon accent shape -->
+  <polygon points="32,8 54,20 54,44 32,56 10,44 10,20" fill="none" stroke="hsl(158, 64%, 52%)" stroke-width="2" opacity="0.4"/>
+  <!-- GF monogram -->
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+    font-family="JetBrains Mono, monospace" font-weight="700" font-size="20"
+    fill="hsl(158, 64%, 52%)">GF</text>
+</svg>

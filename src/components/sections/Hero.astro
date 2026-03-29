@@ -1,0 +1,110 @@
+---
+import MetricBadge from '../ui/MetricBadge.astro';
+
+const techStack = ['LangGraph', 'LangChain', 'GCP', 'MLOps', 'FastAPI'];
+
+const metrics = [
+  { value: '80%', label: 'faster processing', sublabel: '3h → 36min' },
+  { value: '60%', label: 'cost reduction', sublabel: '$16,380 → $312' },
+  { value: '79%', label: 'runtime cut', sublabel: '3h15m → 40min' },
+];
+---
+
+<section class="relative min-h-screen flex items-center hero-mesh dot-grid overflow-hidden pt-16">
+  <!-- Background gradient overlay -->
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg pointer-events-none"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 py-20 md:py-32 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Left: Text content -->
+      <div class="animate-fade-up" style="animation-delay: 0.1s; animation-fill-mode: both; opacity: 0;">
+        <!-- Role label -->
+        <div class="flex items-center gap-3 mb-6">
+          <span class="h-px w-8 bg-accent"></span>
+          <span class="text-accent text-sm font-mono font-medium tracking-wider uppercase">
+            Senior ML Engineer · AI Engineer
+          </span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-5xl md:text-6xl font-bold text-text-primary leading-tight mb-6">
+          Building AI Systems
+          <span class="text-accent block">That Scale.</span>
+        </h1>
+
+        <!-- Tech stack tags -->
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          {techStack.map((tech, i) => (
+            <>
+              <span class="text-sm font-mono text-text-secondary">{tech}</span>
+              {i < techStack.length - 1 && <span class="text-border">·</span>}
+            </>
+          ))}
+        </div>
+
+        <!-- Company + location -->
+        <p class="text-text-muted font-mono text-sm mb-10">
+          <span class="text-text-secondary">@ ReflexAI</span>
+          {' · '}
+          New York (remote from Recife, Brazil)
+        </p>
+
+        <!-- Metric cards -->
+        <div class="flex flex-wrap gap-4 mb-10">
+          {metrics.map((m) => (
+            <MetricBadge value={m.value} label={m.label} sublabel={m.sublabel} />
+          ))}
+        </div>
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap gap-4">
+          <a href="#projects" class="btn-primary">
+            View Projects
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="#contact" class="btn-outline">
+            Get In Touch
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Photo -->
+      <div class="flex justify-center lg:justify-end animate-fade-in" style="animation-delay: 0.4s; animation-fill-mode: both; opacity: 0;">
+        <div class="relative">
+          <!-- Decorative ring -->
+          <div class="absolute inset-0 hex-clip bg-gradient-to-br from-accent/40 to-accent/10 scale-105 blur-sm"></div>
+
+          <!-- Photo container -->
+          <div class="relative w-72 h-72 md:w-80 md:h-80">
+            <div class="hex-clip w-full h-full bg-surface-1 border-2 border-accent/30 overflow-hidden">
+              <!-- Profile photo — replace src with actual photo path -->
+              <img
+                src="/photo.jpg"
+                alt="Giulia Falcão — Senior ML Engineer"
+                class="w-full h-full object-cover"
+                width="320"
+                height="320"
+                loading="eager"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              />
+              <!-- Fallback avatar when photo is not yet added -->
+              <div class="hidden w-full h-full items-center justify-center text-6xl font-bold font-mono text-accent">
+                GF
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating tech tag -->
+          <div class="absolute -bottom-4 -left-4 bg-surface-1 border border-accent-border rounded-xl px-4 py-2.5 shadow-xl">
+            <div class="text-xs text-text-muted font-mono mb-0.5">Currently building</div>
+            <div class="text-sm text-accent font-semibold">LLM pipelines @ ReflexAI</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

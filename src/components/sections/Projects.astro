@@ -1,0 +1,19 @@
+---
+import SectionHeader from '../ui/SectionHeader.astro';
+import ProjectCard from '../ui/ProjectCard.astro';
+import { projects } from '../../data/projects';
+---
+
+<section class="section-padding max-w-6xl mx-auto">
+  <SectionHeader
+    id="projects"
+    title="Featured Projects"
+    subtitle="Production systems, open data initiatives, and AI infrastructure — each built to solve a real problem."
+  />
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {projects.map((project) => (
+      <ProjectCard project={project} />
+    ))}
+  </div>
+</section>

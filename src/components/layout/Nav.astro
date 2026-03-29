@@ -1,0 +1,154 @@
+---
+const navLinks = [
+  { href: '#about', label: 'About' },
+  { href: '#projects', label: 'Projects' },
+  { href: '#skills', label: 'Skills' },
+  { href: '#experience', label: 'Experience' },
+  { href: '#contact', label: 'Contact' },
+];
+---
+
+<header
+  id="nav"
+  class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+>
+  <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <!-- Logo/monogram -->
+    <a href="#" class="font-mono font-bold text-accent text-lg hover:opacity-80 transition-opacity">
+      GF
+    </a>
+
+    <!-- Desktop nav -->
+    <ul class="hidden md:flex items-center gap-8">
+      {navLinks.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            class="text-sm text-text-secondary hover:text-accent transition-colors duration-200 nav-link"
+            data-section={link.href.slice(1)}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <!-- Resume button -->
+    <a
+      href="/resume-giulia-falcao.pdf"
+      download
+      class="hidden md:inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg text-sm text-text-secondary hover:border-accent hover:text-accent transition-all duration-200 font-mono"
+    >
+      Resume
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </a>
+
+    <!-- Mobile hamburger -->
+    <button
+      id="menu-toggle"
+      class="md:hidden p-2 text-text-secondary hover:text-accent transition-colors"
+      aria-label="Toggle menu"
+      aria-expanded="false"
+    >
+      <svg id="icon-menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+      <svg id="icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Mobile drawer -->
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden bg-surface-1 border-t border-border px-6 py-4"
+  >
+    <ul class="flex flex-col gap-4">
+      {navLinks.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            class="text-text-secondary hover:text-accent transition-colors duration-200 mobile-nav-link"
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+      <li class="pt-2 border-t border-border">
+        <a
+          href="/resume-giulia-falcao.pdf"
+          download
+          class="inline-flex items-center gap-2 text-text-secondary hover:text-accent transition-colors duration-200 font-mono text-sm"
+        >
+          Download Resume ↓
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<script>
+  const nav = document.getElementById('nav')!;
+  const toggle = document.getElementById('menu-toggle')!;
+  const menu = document.getElementById('mobile-menu')!;
+  const iconMenu = document.getElementById('icon-menu')!;
+  const iconClose = document.getElementById('icon-close')!;
+
+  // Scroll: add background to nav
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      nav.classList.add('bg-surface-1/95', 'backdrop-blur-sm', 'border-b', 'border-border');
+    } else {
+      nav.classList.remove('bg-surface-1/95', 'backdrop-blur-sm', 'border-b', 'border-border');
+    }
+  }, { passive: true });
+
+  // Mobile menu toggle
+  toggle.addEventListener('click', () => {
+    const isOpen = !menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', isOpen);
+    iconMenu.classList.toggle('hidden', !isOpen);
+    iconClose.classList.toggle('hidden', isOpen);
+    toggle.setAttribute('aria-expanded', String(!isOpen));
+  });
+
+  // Close mobile menu on link click
+  document.querySelectorAll('.mobile-nav-link').forEach((link) => {
+    link.addEventListener('click', () => {
+      menu.classList.add('hidden');
+      iconMenu.classList.remove('hidden');
+      iconClose.classList.add('hidden');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Active section highlighting
+  const sections = ['about', 'projects', 'skills', 'experience', 'contact'];
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          document.querySelectorAll('.nav-link').forEach((link) => {
+            const section = link.getAttribute('data-section');
+            link.classList.toggle('text-accent', section === entry.target.id);
+            link.classList.toggle('text-text-secondary', section !== entry.target.id);
+          });
+        }
+      });
+    },
+    { threshold: 0.3 }
+  );
+
+  sections.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+</script>

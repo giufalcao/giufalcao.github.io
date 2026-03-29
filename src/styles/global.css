@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg:        hsl(222, 20%, 8%);
+  --color-surface-1: hsl(222, 18%, 11%);
+  --color-surface-2: hsl(222, 16%, 15%);
+  --color-border:    hsl(222, 14%, 20%);
+
+  --color-text-primary:   hsl(210, 40%, 96%);
+  --color-text-secondary: hsl(215, 20%, 65%);
+  --color-text-muted:     hsl(215, 15%, 45%);
+
+  --color-accent:        hsl(158, 64%, 52%);
+  --color-accent-dim:    hsl(158, 64%, 40%);
+  --color-accent-subtle: hsl(158, 64%, 10%);
+  --color-accent-border: hsl(158, 64%, 25%);
+
+  --color-metric:        hsl(38, 92%, 60%);
+  --color-metric-subtle: hsl(38, 92%, 12%);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-border);
+  }
+
+  /* Focus ring */
+  *:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-accent-subtle);
+    color: var(--color-accent);
+  }
+}
+
+@layer components {
+  .section-padding {
+    @apply px-6 py-24 md:px-12 lg:px-24;
+  }
+
+  .card {
+    @apply bg-surface-1 border border-border rounded-xl p-6 transition-all duration-300;
+  }
+
+  .card:hover {
+    @apply border-accent/30 -translate-y-1;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px hsl(158, 64%, 52%, 0.15);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-accent text-bg font-semibold rounded-lg transition-all duration-200 hover:bg-accent-dim;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-6 py-3 border border-border text-text-secondary font-semibold rounded-lg transition-all duration-200 hover:border-accent hover:text-accent;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium font-mono;
+  }
+
+  .tech-pill {
+    @apply inline-flex items-center px-3 py-1 bg-surface-2 border border-border rounded-full text-xs font-mono text-text-secondary transition-colors duration-200 hover:border-accent/50 hover:text-accent;
+  }
+}
+
+/* Hexagon clip for photo */
+.hex-clip {
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+/* Gradient mesh background for hero */
+.hero-mesh {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, hsl(158, 64%, 52%, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, hsl(222, 76%, 48%, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, hsl(38, 92%, 60%, 0.04) 0%, transparent 50%);
+}
+
+/* Dot grid pattern */
+.dot-grid {
+  background-image: radial-gradient(circle, hsl(222, 14%, 20%) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Timeline connector line */
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 24px;
+  bottom: -24px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--color-accent-border), transparent);
+}
+
+/* Animated gradient border for metric cards */
+.metric-card {
+  position: relative;
+  background: var(--color-metric-subtle);
+  border: 1px solid hsl(38, 92%, 60%, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
