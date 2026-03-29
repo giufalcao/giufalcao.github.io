@@ -45,7 +45,7 @@ export const projects: Project[] = [
     motivation: 'Every citizen deserves to understand how their representatives vote.',
     categories: ['Civic Tech', 'Full-Stack', '🇧🇷 Open Data'],
     techStack: ['Next.js', 'Supabase', 'TypeScript', 'Câmara API', 'Tailwind CSS'],
-    demo: 'https://voto-explicado.vercel.app',
+    demo: 'https://voto-explicado.vercel.app/',
     isPrivate: true,
     accentColor: 'teal',
   },
