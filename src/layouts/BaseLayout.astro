@@ -6,8 +6,8 @@ interface Props {
 }
 
 const {
-  title = 'Giulia Falcão — Senior ML Engineer & AI Engineer',
-  description = 'Senior Machine Learning Engineer and AI Engineer at ReflexAI. Building production AI systems with LangGraph, LangChain, GCP, and MLOps.',
+  title = 'Giulia Falcão',
+  description = 'Machine Learning Engineer at ReflexAI. Building evaluation systems for LLMs and full-stack products.',
   ogImage = '/og-image.png',
 } = Astro.props;
 
@@ -55,9 +55,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     />
 
     <!-- Theme color -->
-    <meta name="theme-color" content="#0d1117" />
+    <meta name="theme-color" content="#ffffff" />
   </head>
-  <body class="bg-bg text-text-primary antialiased">
+  <body>
     <slot />
   </body>
 </html>
