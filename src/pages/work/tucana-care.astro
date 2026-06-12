@@ -1,0 +1,156 @@
+---
+import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
+---
+
+<CaseStudyLayout
+  title="Tucana Care"
+  description="A clinical copilot that keeps professionals informed between sessions and surfaces urgencies before the next appointment."
+  accent="#f43f5e"
+  codeColor="#be123c"
+  mermaidPrimary="#ffe4e6"
+  mermaidPrimaryText="#9f1239"
+  mermaidPrimaryBorder="#fda4af"
+>
+
+<span class="case-label">Personal Project · Healthcare</span>
+<h1>Tucana Care</h1>
+<p class="subtitle">A clinical copilot that keeps professionals informed between sessions and surfaces urgencies before the next appointment.</p>
+
+<div class="meta">
+  <div class="meta-item">
+    <div class="meta-key">Role</div>
+    <div class="meta-val">Solo · Full-Stack</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Stack</div>
+    <div class="meta-val">React · TypeScript · Supabase · Deno Edge Functions · OpenAI · Evolution API v2</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Status</div>
+    <div class="meta-val">Pre-launch · 261 unit tests</div>
+  </div>
+</div>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p>The gap in clinical care isn't during sessions. It's the days in between, when a patient deteriorates quietly and the professional has no way to know. Tucana Care closes that gap: it sends AI-generated summaries to patients via WhatsApp after each session, fires scheduled check-ins in between, and classifies every inbound message for urgency. Critical flags show up in the dashboard in real time. The backend runs entirely on serverless Edge Functions with no persistent server to maintain.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">01</span>
+  <h2>The Challenge</h2>
+  <p>Clinicians finish a session and immediately lose contact. The patient goes home, and whatever happens next is invisible until the next appointment, which might be weeks away. There's no lightweight channel for the professional to stay informed without scheduling a full follow-up.</p>
+  <p>Getting that channel adopted was its own design problem. Healthcare professionals aren't looking for another tool to check. The follow-up had to reach patients where they already are, which meant WhatsApp, and alerts had to reach the professional without any action on their part.</p>
+  <p>WhatsApp also shapes the architecture. Evolution API v2 works through webhooks: every inbound message arrives as a push event, not something you poll for. That determined most of the backend design from the start.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">02</span>
+  <h2>Architecture</h2>
+  <p>The backend runs on serverless Edge Functions with no persistent server. Session events, scheduled check-ins, message dispatch, and urgency classification all run as Deno functions on Supabase. The same infrastructure handles outbound messages to patients and inbound messages from them, with urgency updates pushed to the frontend over a Realtime subscription the moment they land in the database.</p>
+
+  <div class="diagram-wrap">
+    <div class="diagram-label">System overview</div>
+    <div class="mermaid">
+flowchart LR
+    PROF[Professional]:::user
+    TUCANA[Tucana Care\nDeno Edge Functions]:::fn
+    WA[WhatsApp\nEvolution API v2]:::channel
+    SB[(Supabase\nPostgres + Realtime)]:::storage
+    UI[Dashboard\nurgency feed]:::ui
+
+    PROF -->|session event| TUCANA
+    TUCANA &lt;--&gt;|messages| WA
+    TUCANA --> SB
+    SB -->|Realtime push| UI
+
+    classDef user fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    classDef fn fill:#ffe4e6,stroke:#f43f5e,color:#9f1239
+    classDef channel fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    classDef storage fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    classDef ui fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    </div>
+  </div>
+  <p style="font-size:13px; color:#475569; margin-top:8px;">Outbound: session events trigger follow-ups to the patient. Inbound: patient messages are classified before reaching the database, then pushed to the professional's dashboard.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">03</span>
+  <h2>The Work</h2>
+
+  <div class="act">
+    <span class="act-label">Act 1 · Session follow-up</span>
+    <h3>From session close to patient message, automatically</h3>
+    <p>When a professional closes a session, the patient receives an AI-generated summary over WhatsApp. The tone is calibrated for the patient, not a clinical readout. If the session was recorded by voice, the audio goes through Whisper first.</p>
+    <p>Scheduled check-ins run on a separate cadence, set per patient. Each message is grounded in that patient's last session context rather than a generic template. The professional configures the interval once and doesn't touch it again.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>AI summary at session close · personalized check-in at configured interval · audio transcription via Whisper</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 2 · Urgency detection</span>
+    <h3>Every reply classified before it reaches the dashboard</h3>
+    <p>Every WhatsApp reply gets classified for urgency before anything else happens. The patient receives an AI-generated response right away. The urgency level is persisted and drives what the professional sees on the dashboard.</p>
+    <p>Critical messages don't wait for the next login. The frontend subscribes to a Realtime channel and receives the update the moment the database write lands. The professional sees the alert when it happens, without refreshing or checking anything manually.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>Real-time urgency feed on the dashboard · AI reply to patient · full conversation history in Supabase</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 3 · Correctness at the boundaries</span>
+    <h3>Types and structure that hold under healthcare constraints</h3>
+    <p>Healthcare data has consequences, so the codebase runs TypeScript strict mode with zero <code>as any</code> throughout. Types flow from the Supabase-generated schema rather than being hand-written. Phone numbers normalize to E.164 at the UI boundary via <code>toE164()</code> before touching the database or the WhatsApp API.</p>
+    <p>The frontend follows a strict dependency direction: <code>components → hooks → lib → integrations</code>. Nothing imports from a layer above itself. That constraint made the 261-test suite tractable: pure functions in <code>lib/</code> are tested in isolation, UI state through module mocks, and the boundary between layers holds when either side changes.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>261 unit tests · zero <code>as any</code> · E.164 phone normalization · strict layer dependency</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">04</span>
+  <h2>What Made It Work</h2>
+  <div class="principles">
+    <div class="principle">
+      <div class="pnum">1</div>
+      <div class="pbody">
+        <h4>No server to maintain</h4>
+        <p>Edge Functions instead of a persistent server means no containers, no uptime concerns, and no infrastructure to babysit. For a solo product, that's not just a cost decision — it changes what you spend time on.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">2</div>
+      <div class="pbody">
+        <h4>Realtime for clinical alerts, not polling</h4>
+        <p>An urgency flag sitting unseen for 30 seconds because the dashboard was polling defeats the purpose. The Supabase Realtime subscription pushes the update the moment the write lands. The professional doesn't need to do anything to see it.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">3</div>
+      <div class="pbody">
+        <h4>Push in both directions</h4>
+        <p>Session events push outbound to the patient. Patient messages push urgency inbound to the professional. Nothing waits on a request cycle. That's what makes it possible to build a responsive product on top of serverless infrastructure with no persistent process running in the middle.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="next" href="/work/voto-explicado">
+  <div>
+    <div class="next-lbl">Next Project</div>
+    <div class="next-title">Voto Explicado</div>
+  </div>
+  <div class="next-arrow">→</div>
+</a>
+
+</CaseStudyLayout>
+
+<style is:global>
+  .callout { background: #fff1f2; border: 1px solid #fecdd3; }
+  .result span { color: #be123c; }
+</style>
