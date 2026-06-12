@@ -1,0 +1,276 @@
+---
+import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
+---
+
+<CaseStudyLayout
+  title="Adaptive Persona Behavior"
+  description="A multi-agent system that controls how AI roleplay personas adapt emotional and behavioral responses in real time."
+  accent="#8b5cf6"
+  codeColor="#6d28d9"
+  mermaidPrimary="#ede9fe"
+  mermaidPrimaryText="#4c1d95"
+  mermaidPrimaryBorder="#c4b5fd"
+>
+
+<style is:global>
+  .classification-table { width: 100%; border-collapse: collapse; font-family: system-ui; font-size: 12px; margin: 20px 0; }
+  .classification-table th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+  .classification-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; vertical-align: top; }
+  .classification-table td:first-child { font-family: monospace; font-size: 11px; }
+  .c-effective { color: #10b981; }
+  .c-partial { color: #059669; }
+  .c-neutral { color: #64748b; }
+  .c-ineffective { color: #f59e0b; }
+  .c-harmful { color: #ef4444; }
+
+  .refs { margin-bottom: 60px; }
+  .refs-group { margin-bottom: 28px; }
+  .refs-group-label { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 12px; display: block; }
+  .ref { display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start; }
+  .ref-body { flex: 1; }
+  .ref-title { font-family: system-ui; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 2px; }
+  .ref-title a { color: #94a3b8; text-decoration: none; border-bottom: 1px solid #e2e8f0; }
+  .ref-title a:hover { color: #0f172a; border-color: #94a3b8; }
+  .ref-meta { font-family: monospace; font-size: 11px; color: #475569; margin-bottom: 3px; }
+  .ref-influence { font-size: 12px; color: #475569; font-style: italic; }
+  .ref-influence strong { color: #94a3b8; font-style: normal; }
+</style>
+
+<span class="case-label">Case Study · ReflexAI</span>
+<h1>Adaptive Persona Behavior</h1>
+<p class="subtitle">Building a system where the simulation responds to what the trainee actually does.</p>
+
+<div class="meta">
+  <div class="meta-item">
+    <div class="meta-key">Role</div>
+    <div class="meta-val">Machine Learning Engineer</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Stack</div>
+    <div class="meta-val">Gemini 2.5 Flash · Gemini 2.5 Pro · LangGraph · NestJS · TypeScript · GCP Cloud Run</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Outcome</div>
+    <div class="meta-val">Dynamic simulations across all text and voice bot clients</div>
+  </div>
+</div>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p>Training simulations are only useful if they can't be gamed. The simulations I worked on had a problem: the personas were static. It didn't matter how the trainee responded — dismissive, empathetic, scripted — the persona kept going the same way. People figured that out fast. I built the system that changed it: an LLM service that evaluates each trainee message in real time, a state machine that tracks how the persona's emotional state should shift based on that evaluation, and a prompt injection layer that makes those changes visible in how the persona actually responds. It runs across both text and voice clients.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">01</span>
+  <h2>The Challenge</h2>
+  <p>The simulations existed to train people in high-stakes conversations: de-escalating a distressed caller, handling resistance, building trust under pressure. The personas were scripted to present a challenge, but they did not track how the conversation was going. A dismissive response from the trainee produced the same next message as an empathetic one.</p>
+  <p>Without any feedback loop, trainees figured out quickly that repeating a few generic phrases was enough to pass. The simulation had no way to distinguish real skill from pattern-matching.</p>
+  <p>The fix required three things working together: a way to evaluate each trainee message, a way to track the persona's emotional state across the conversation, and a way to inject that state into the persona's behavior on each turn without breaking the real-time experience.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">02</span>
+  <h2>Architecture</h2>
+  <p>Each trainee message triggers a three-step pipeline: assessment, state transition, and prompt injection. The assessor classifies the message; the state engine computes what changes; the persona's system prompt is updated before it responds.</p>
+
+  <div class="diagram-wrap">
+    <div class="diagram-label">Per-turn pipeline</div>
+    <div class="mermaid">
+flowchart LR
+    MSG[Trainee message]:::input
+    ASSESS[LLM Assessor Service]:::llm
+    CLASS[classification\nconfidence score]:::data
+    STATE[State Engine]:::engine
+    BLOCK[Prompt Builder]:::engine
+    INJECT[System prompt\ninjection]:::inject
+    PERSONA[Persona LLM\nresponds]:::output
+
+    MSG --> ASSESS --> CLASS --> STATE --> BLOCK --> INJECT --> PERSONA
+
+    classDef input fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    classDef llm fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
+    classDef data fill:#1e293b,stroke:#334155,color:#64748b
+    classDef engine fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+    classDef inject fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
+    classDef output fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    </div>
+  </div>
+
+  <p>The emotional state config is generated at creation time by an ML service using Gemini 2.5 Pro structured output through a LangGraph workflow. A config flag propagates through six layers from the cloud function to the LLM and back. At runtime, all bot clients delegate emotional state processing to a shared NestJS service module.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">03</span>
+  <h2>The Work</h2>
+
+  <div class="act">
+    <span class="act-label">Act 1 · Trainee Assessor</span>
+    <h3>Classifying each message with confidence thresholds</h3>
+    <p>The assessor runs on every trainee message using Gemini 2.5 Flash with structured output. It returns a classification, a confidence score, and any trigger matches. Five classifications cover the full range of trainee behavior:</p>
+
+    <table class="classification-table">
+      <tr>
+        <th>Classification</th>
+        <th>Weight</th>
+        <th>Behavior</th>
+      </tr>
+      <tr><td class="c-effective">EFFECTIVE</td><td>+1.0</td><td>Genuine, situation-specific empathy with concrete action</td></tr>
+      <tr><td class="c-partial">PARTIALLY_EFFECTIVE</td><td>+0.5</td><td>Generic empathy, names the skill without demonstrating it</td></tr>
+      <tr><td class="c-neutral">NEUTRAL</td><td>0.0</td><td>Factual or procedural, no emotional engagement</td></tr>
+      <tr><td class="c-ineffective">INEFFECTIVE</td><td>0.0 + reset</td><td>Scripted language, solutions before validation</td></tr>
+      <tr><td class="c-harmful">HARMFUL</td><td>0.0 + reset + escalate</td><td>Dismissive, condescending, interrupts</td></tr>
+    </table>
+
+    <p>The assessor call is wrapped in <code>retry()</code> with a timeout that matches the persona model calls, keeping the pipeline latency consistent.</p>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 2 · Emotional State Machine</span>
+    <h3>Deterministic transitions, not LLM generation</h3>
+    <p>The state engine processes transitions in priority order: regression triggers first, then escalation, then de-escalation, then classification-based accumulation. Trigger activation requires the assessor confidence to meet or exceed the configured threshold (default 0.85).</p>
+    <p>De-escalation has resistance levels that require the trainee to sustain good performance before the persona softens. Low resistance needs 2 effective turns; medium needs 3; high needs 4. A single regression trigger resets the accumulated progress counter without necessarily changing the state, which forces trainees to rebuild trust rather than recover in one message.</p>
+    <p>Every state change is stored on the message context. State replay reconstructs the current state from transcript history using those stored events as ground truth, only recomputing from classification logic where no stored event is present.</p>
+    <div class="result">
+      <span class="result-label">Result</span>
+      <span>Fully deterministic, testable state transitions with no LLM non-determinism in persona behavior logic</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 3 · Deployment across all clients</span>
+    <h3>One shared module, text and voice</h3>
+    <p>All bot clients delegate emotional state processing to the same shared NestJS service module. Any fix or change applies everywhere at once, with no risk of text and voice implementations diverging over time.</p>
+    <p>Voice required an async adaptation. The STT → LLM → TTS pipeline is real-time, so the assessor runs with a one-turn lag to avoid blocking the response. The emotional state the persona embodies on turn N was computed from turn N-1's assessment. The experience stays fluid for the trainee; the state machine stays accurate.</p>
+    <div class="result">
+      <span class="result-label">Result</span>
+      <span>Deployed across all text and voice clients · full unit and E2E test coverage</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">04</span>
+  <h2>What Made It Work</h2>
+  <div class="principles">
+    <div class="principle">
+      <div class="pnum">1</div>
+      <div class="pbody">
+        <h4>Deterministic core, LLM at the edges</h4>
+        <p>The state machine is fully deterministic. The LLM handles assessment and config generation, where variability is acceptable. State transitions, resistance thresholds, and trigger logic are code, not prompts. That made the system testable and the behavior predictable.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">2</div>
+      <div class="pbody">
+        <h4>Structured output for reliability</h4>
+        <p>The assessor returns a typed schema, not free text. Gemini 2.5 Flash with structured output gives the state engine something it can process consistently, with a retry wrapper handling the edge cases where the model call doesn't complete cleanly.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">3</div>
+      <div class="pbody">
+        <h4>Shared module to avoid divergence</h4>
+        <p>Keeping emotional state processing in one NestJS service meant any fix or improvement applied everywhere at once. Clients that opted in got identical behavior, and there was no risk of text and voice implementations drifting apart over time.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section refs">
+  <span class="section-num">05</span>
+  <h2>References</h2>
+
+  <div class="refs-group">
+    <span class="refs-group-label">Primary Framework</span>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://aclanthology.org/2025.findings-acl" target="_blank">Adaptive-VP (ACL 2025 Findings) — Lee et al.</a></div>
+        <div class="ref-meta">ACL Anthology · 2025</div>
+        <div class="ref-influence">4-module pipeline for dynamic virtual patient behavior adjustment. <strong>Key influence:</strong> graded adaptation signal, quality-based progress weighting.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="refs-group">
+    <span class="refs-group-label">Stubbornness Mechanism</span>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://arxiv.org/abs/2503.22250" target="_blank">Modeling Challenging Patient Interactions</a></div>
+        <div class="ref-meta">arXiv 2503.22250 · 2025</div>
+        <div class="ref-influence">Behavioral prompts and stubbornness mechanisms for virtual patients. <strong>Key influence:</strong> resistance prompt field.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="refs-group">
+    <span class="refs-group-label">VR De-escalation Training</span>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9301562/" target="_blank">Code Black VR</a></div>
+        <div class="ref-meta">JMIR Serious Games · PMC9301562</div>
+        <div class="ref-influence">VR de-escalation trainer with escalation/de-escalation agent behaviors. <strong>Key influence:</strong> regression triggers.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="refs-group">
+    <span class="refs-group-label">Simulation-Based Education</span>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://www.tandfonline.com" target="_blank">De-Escalation Through Simulation-Based Education</a></div>
+        <div class="ref-meta">Studies in Clinical Social Work · 2025</div>
+        <div class="ref-influence">Students oscillate between demonstrating and naming skills. <strong>Key influence:</strong> PARTIALLY_EFFECTIVE classification, "solution before validation" trigger.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="refs-group">
+    <span class="refs-group-label">Industry Platforms</span>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://exec.com" target="_blank">Exec</a></div>
+        <div class="ref-meta">Industry platform</div>
+        <div class="ref-influence">Progressive difficulty scaling. <strong>Key influence:</strong> -24% conflict resolution time benchmark.</div>
+      </div>
+    </div>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://www.mursion.com" target="_blank">Mursion</a></div>
+        <div class="ref-meta">Industry platform</div>
+        <div class="ref-influence">Emotion maps and modeled self-esteem in simulated interactions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="refs-group">
+    <span class="refs-group-label">Additional</span>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://www.jmir.org" target="_blank">Prompt Engineering for Mental Health Chatbots</a></div>
+        <div class="ref-meta">JMIR · 2025</div>
+      </div>
+    </div>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://www.sciencedirect.com" target="_blank">Persona Influence on Social Interactions</a></div>
+        <div class="ref-meta">ScienceDirect · 2025</div>
+      </div>
+    </div>
+    <div class="ref">
+      <div class="ref-body">
+        <div class="ref-title"><a href="https://arxiv.org" target="_blank">Beyond Idealized Patients</a></div>
+        <div class="ref-meta">arXiv · 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="/work/pharma-recommendation" class="next">
+  <div>
+    <div class="next-lbl">Next Case Study</div>
+    <div class="next-title">Pharmaceutical Recommendation System</div>
+  </div>
+  <div class="next-arrow">→</div>
+</a>
+
+</CaseStudyLayout>
