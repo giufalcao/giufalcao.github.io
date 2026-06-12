@@ -1,0 +1,164 @@
+---
+import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
+---
+
+<CaseStudyLayout
+  title="Voto Explicado"
+  description="Congressional voting data made readable for any Brazilian citizen."
+  accent="#22c55e"
+  codeColor="#16a34a"
+  mermaidPrimary="#dcfce7"
+  mermaidPrimaryText="#14532d"
+  mermaidPrimaryBorder="#86efac"
+>
+
+<span class="case-label">Personal Project · Civic Tech</span>
+<h1>Voto Explicado</h1>
+<p class="subtitle">Congressional voting data made readable for any Brazilian citizen.</p>
+
+<div class="meta">
+  <div class="meta-item">
+    <div class="meta-key">Role</div>
+    <div class="meta-val">Solo · Full-Stack</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Stack</div>
+    <div class="meta-val">React · TypeScript · Supabase · Vercel Crons · Tavily · GPT-4o-mini</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Demo</div>
+    <div class="meta-val"><a href="https://voto-explicado.vercel.app" target="_blank" class="demo-link">voto-explicado.vercel.app</a></div>
+  </div>
+</div>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p>The Chamber of Deputies publishes every vote. Almost no one reads it. I built Voto Explicado to close that gap — a transparency platform that turns raw congressional voting records into something a citizen can actually use: party ideology maps, government/opposition alignment, vote cohesion scores, and an AI-powered search that tells you where a politician stands on any topic. Data is synced daily via cron, so users never wait on the Câmara API.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">01</span>
+  <h2>The Challenge</h2>
+  <p>Brazil's Chamber of Deputies publishes detailed voting records through a public API. The data is there, it's open, and it's complete. The problem is that it's designed for machines, not people. Raw vote codes, party identifiers, and proposition IDs don't tell a citizen whether their representative voted with or against the government, how unified their party actually is, or what position a politician has taken on tax reform.</p>
+  <p>There's also a technical constraint: the Câmara API is rate-limited and occasionally slow. Any app that hits it on each user request will either be slow or get blocked under real traffic. The architecture had to respect those limits while still keeping the interface fast.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">02</span>
+  <h2>Architecture</h2>
+  <p>The app uses a periodic listener pattern. A Vercel cron job runs daily at 01:00 UTC, fetches the latest data from the Câmara API, upserts it into Supabase, and recalculates party positions. Users always read from Supabase — no live API calls on the request path, keeping responses under 150ms regardless of traffic.</p>
+  <p>Statement search breaks from that pattern: it's on-demand because the question is user-defined. A POST to a Vercel serverless function triggers a Tavily web search, then GPT-4o-mini classifies the politician's position from the results. Responses are cached in Supabase for 7 days to avoid repeat calls for common queries.</p>
+
+  <div class="diagram-wrap">
+    <div class="diagram-label">Data architecture</div>
+    <div class="mermaid">
+flowchart LR
+    CRON[Vercel Cron\n01:00 UTC daily]:::cron
+    CAMARA[Câmara API\ndadosabertos.camara.leg.br]:::external
+    SB[(Supabase\nPostgreSQL)]:::storage
+    USER[User request]:::user
+    UI[React frontend]:::ui
+
+    SEARCH[Statement search\nPOST /api/buscar-declaracoes]:::search
+    TAVILY[Tavily\nweb search]:::external
+    GPT[GPT-4o-mini\nposition classifier]:::llm
+    CACHE[(Supabase\n7-day cache)]:::storage
+
+    CRON --> CAMARA --> SB
+    USER --> UI --> SB
+    UI --> SEARCH --> TAVILY --> GPT --> CACHE
+
+    classDef cron fill:#dcfce7,stroke:#22c55e,color:#14532d
+    classDef external fill:#1e293b,stroke:#334155,color:#64748b
+    classDef storage fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    classDef user fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    classDef ui fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+    classDef search fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
+    classDef llm fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">03</span>
+  <h2>The Work</h2>
+
+  <div class="act">
+    <span class="act-label">Act 1 · Data layer</span>
+    <h3>Turning vote records into political context</h3>
+    <p>The raw Câmara data tells you which party voted yes or no on a given proposition. That's not the same as telling you whether a party voted with the government. The daily cron job does two things after syncing: it upserts the latest deputies and vote records, then recalculates each party's position — government, independent, or opposition — based on their actual voting alignment over time.</p>
+    <p>Party cohesion is calculated from the variance in individual votes within each party. A party with near-zero variance votes as a bloc; high variance means members frequently break from party line. Both are surfaced in the dashboard so users can distinguish disciplined alliances from loose coalitions.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>Daily-synced records for all active deputies · automatic government/opposition alignment · per-party cohesion scores</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 2 · Alignment engine</span>
+    <h3>Calculating political position from votes, not labels</h3>
+    <p>The app's core claim — that a party is government, opposition, or independent — needs to be defensible. The approach is a curated corpus of landmark votes (constitutional amendments, major legislation going back to 2016), each annotated with <code>posicao_governo</code>: which way the government of the day voted. Party position is then calculated from how consistently each party's majority vote aligns with or diverges from that government position across the corpus. No editorial judgment — the classification comes from the voting record itself.</p>
+    <p>The same corpus powers the quiz. The user answers SIM or NÃO on each landmark vote and can flag issues they care more about (doubling that question's weight). At submission, the app fetches real party vote records from Supabase and runs a weighted match: for each answered question, if the user and the party voted the same way, that question's weight is added to the score. Final alignment is <code>(weighted matches / total weight) × 100</code>. Abstentions are excluded from both sides. The result is a ranked list of parties by actual policy alignment — not by declared ideology or editorial categorization.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>Government/opposition alignment derived from voting history · weighted party match quiz · cohesion scores from intra-party vote variance</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 3 · Statement search</span>
+    <h3>AI-powered position classification on any topic</h3>
+    <p>Voting records tell you what a politician did. They don't tell you what they've said. The statement search feature takes a user-typed topic, runs a Tavily web search scoped to recent news about that politician, and passes the results to GPT-4o-mini with a classification prompt. The output is a verdict — <strong>A FAVOR</strong>, <strong>CONTRA</strong>, or <strong>NEUTRO</strong> — with a confidence score and source links.</p>
+    <p>Results are cached in Supabase with a 7-day TTL for successful classifications and a 1-hour TTL for no-data results, so repeat queries on popular topics don't re-run the search pipeline.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>Position verdict · confidence score · linked sources · 7-day Supabase cache</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">04</span>
+  <h2>What Made It Work</h2>
+  <div class="principles">
+    <div class="principle">
+      <div class="pnum">1</div>
+      <div class="pbody">
+        <h4>Never hit the source API on the user's request</h4>
+        <p>The periodic listener pattern was the most important architectural decision. Syncing on a schedule instead of per-request means the app stays fast under any traffic level and the Câmara API never becomes a bottleneck or failure point.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">2</div>
+      <div class="pbody">
+        <h4>Derive context from data, don't describe it</h4>
+        <p>Government/opposition alignment and party cohesion are not labels someone assigns — they're calculated from the vote records that are already there. The platform earns credibility because its political classifications come from actual voting behavior, not editorial judgment.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">3</div>
+      <div class="pbody">
+        <h4>Cache at the right layer</h4>
+        <p>Supabase serves as both the database and the cache for statement search results. No separate cache infrastructure to maintain. The 7-day TTL fits the use case: political positions on a topic rarely reverse in a week, so stale results are rarely a problem.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="/work/voteview-brasil" class="next">
+  <div>
+    <div class="next-lbl">Next Project</div>
+    <div class="next-title">VoteView Brasil</div>
+  </div>
+  <div class="next-arrow">→</div>
+</a>
+
+</CaseStudyLayout>
+
+<style is:global>
+  .demo-link {
+    color: #64748b;
+    text-decoration: none;
+    border-bottom: 1px solid #1e293b;
+  }
+</style>
