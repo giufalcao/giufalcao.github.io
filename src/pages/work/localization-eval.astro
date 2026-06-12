@@ -1,0 +1,305 @@
+---
+import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
+
+const mermaidDiagram = `flowchart LR
+    BQ[(BigQuery\\ntranscripts)]:::storage
+    BASE[Baseline run\\nEnglish dims]:::run
+    TEST[Test run\\ntarget-lang dims\\nx3 for noise floor]:::run
+    LF[(Langfuse\\ntraces)]:::storage
+
+    OL{output-language\\nprerequisite}:::prereq
+    SC[score-consistency]:::judge
+    DA[dimension-alignment]:::judge
+    FQ[feedback-quality]:::judge
+    CN[coaching-naturalness]:::judge
+    HC[Human calibration\\nbilingual experts]:::human
+    GATE{Release gate\\n>=80% agreement}:::gate
+    PASS[Approved]:::pass
+    FAIL[Blocked]:::fail
+
+    BQ --> BASE & TEST --> LF
+    LF --> OL
+    OL -->|fails| FAIL
+    OL -->|passes| SC --> DA --> FQ --> CN --> HC --> GATE
+    GATE -->|meets threshold| PASS
+    GATE -->|below threshold| FAIL
+
+    classDef storage fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    classDef run fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+    classDef prereq fill:#3b0a0a,stroke:#ef4444,color:#fca5a5
+    classDef judge fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    classDef human fill:#2d1b4e,stroke:#8b5cf6,color:#c4b5fd
+    classDef gate fill:#1a1f0a,stroke:#84cc16,color:#86efac
+    classDef pass fill:#1a2f1a,stroke:#10b981,color:#6ee7b7
+    classDef fail fill:#1e293b,stroke:#334155,color:#64748b`;
+---
+
+<CaseStudyLayout
+  title="Localization Quality Framework"
+  description="Building a reliable gate for LLM evaluation quality across languages."
+  accent="#14b8a6"
+  codeColor="#0f766e"
+  mermaidPrimary="#ccfbf1"
+  mermaidPrimaryText="#134e4a"
+  mermaidPrimaryBorder="#5eead4"
+>
+
+<style is:global>
+  .judge-table { width: 100%; border-collapse: collapse; font-family: system-ui; font-size: 12px; margin: 20px 0; }
+  .judge-table th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+  .judge-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; vertical-align: top; line-height: 1.5; }
+  .judge-table td:first-child { font-family: monospace; font-size: 11px; color: #14b8a6; white-space: nowrap; }
+  .judge-table td:nth-child(3) { font-family: monospace; font-size: 11px; color: #64748b; }
+  .judge-table tr:hover td { background: #f8fafc; }
+  .prereq { color: #ef4444 !important; }
+
+  .result span { color: #0f766e; }
+
+  .insight { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 14px 16px; margin: 16px 0; font-family: system-ui; font-size: 13px; }
+  .insight-label { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #15803d; margin-bottom: 6px; }
+  .insight p { color: #166534; margin: 0; font-size: 13px; }
+
+  .ref-table { width: 100%; border-collapse: collapse; font-family: system-ui; font-size: 12px; margin: 16px 0 28px; }
+  .ref-table th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+  .ref-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; vertical-align: top; line-height: 1.5; font-size: 12px; }
+  .ref-table td:first-child { color: #14b8a6; font-weight: 600; white-space: nowrap; }
+  .ref-section-label { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 12px; display: block; }
+</style>
+
+<span class="case-label">Case Study · ReflexAI</span>
+<h1>Localization Quality Framework</h1>
+<p class="subtitle">Building a reliable gate for LLM evaluation quality across languages.</p>
+
+<div class="meta">
+  <div class="meta-item">
+    <div class="meta-key">Role</div>
+    <div class="meta-val">Machine Learning Engineer</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Stack</div>
+    <div class="meta-val">BigQuery · Langfuse · Anthropic Claude · Python · LLM Meta-judges · Observability</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Outcome</div>
+    <div class="meta-val">≥80% human-LLM agreement · reusable across locales</div>
+  </div>
+</div>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p>LLM evaluation pipelines degrade on non-English content, and most of it is not the model failing. It is translation artifacts making the judge confused. I designed a two-phase quality framework to gate localized releases: a controlled evaluation run that isolates dimension language as the variable, followed by 5 meta-judges that each target a specific failure mode. Thresholds are grounded in 6 published NLP studies. A human calibration layer by bilingual experts validates the gates before they are trusted in production. First run was Spanish. The framework is locale-agnostic and built to extend.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">01</span>
+  <h2>The Challenge</h2>
+  <p>The evaluation pipeline that worked well in English did not transfer cleanly to Spanish. LLM judges were scoring inconsistently — not because the underlying model was worse, but because 88% of the mismatches traced back to translation artifacts: awkward phrasing, register mismatches, fragments in the wrong language. The judge was getting confused by the output, not by the actual quality of the interaction.</p>
+  <p>Shipping localized content without a reliable quality gate meant trusting an evaluation signal that was known to be degraded. The question was how to detect and gate the specific failure modes that localization introduces, without rebuilding the whole pipeline for each new language.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">02</span>
+  <h2>Architecture</h2>
+  <p>The framework runs in two phases. Phase 1 collects paired evaluation runs on the same transcript corpus: a baseline run scored with English dimensions, and a test run scored with target-language dimensions repeated three times to establish the noise floor. Both run through the LLM scoring service with temperature set to 0, and all traces are logged to Langfuse.</p>
+  <p>Phase 2 runs 5 meta-judges on the Phase 1 traces. The first judge is a hard prerequisite: if it fails, nothing else runs. The remaining four target independent quality dimensions. All five must pass before a localized release is approved, with a final human calibration step validating the gate thresholds.</p>
+
+  <div class="diagram-wrap">
+    <div class="diagram-label">Full framework pipeline</div>
+    <div class="mermaid" set:html={mermaidDiagram} />
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">03</span>
+  <h2>The Judges</h2>
+
+  <table class="judge-table">
+    <tr>
+      <th>Judge</th>
+      <th>What it checks</th>
+      <th>Threshold</th>
+      <th>Notes from Spanish run</th>
+    </tr>
+    <tr>
+      <td class="prereq">output-language</td>
+      <td>All generated fields are in the target language — no English fragments in feedback, summaries, or quotes</td>
+      <td>≥ 2.9 / 3.0</td>
+      <td>Hard prerequisite. If this fails, none of the other scores can be trusted.</td>
+    </tr>
+    <tr>
+      <td>score-consistency</td>
+      <td>Score is stable across 3 test runs; spread ≤ 1pt on ≤ 10% of transcripts</td>
+      <td>≤ 10% spread</td>
+      <td>Threshold set above the English noise floor (8.6% on sales content) so the gate doesn't reject the pipeline's own baseline.</td>
+    </tr>
+    <tr>
+      <td>dimension-alignment</td>
+      <td>Coaching addresses what the scoring dimension actually describes; catches cases where the score is right but the coaching is off-target</td>
+      <td>≥ 2.5 / 3.0</td>
+      <td>Domain-agnostic prompt — reads criteria from the rubric, no hardcoded domain knowledge needed.</td>
+    </tr>
+    <tr>
+      <td>feedback-quality</td>
+      <td>Feedback is specific and actionable; verbatim quotes match the transcript</td>
+      <td>≥ 2.5 / 3.0</td>
+      <td>Most sensitive judge to rubric quality. Generic rubrics produce generic feedback — failures here usually trace to weak dimension prompts, not the localization.</td>
+    </tr>
+    <tr>
+      <td>coaching-naturalness</td>
+      <td>Coaching sounds natural to a native speaker of the target locale, register-appropriate, no machine-translation artifacts</td>
+      <td>≥ 2.5 / 3.0</td>
+      <td>Circularity risk: LLM judging LLM. Treated as regression signal only — trusted after validation against human scores in the calibration step.</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <span class="section-num">04</span>
+  <h2>The Work</h2>
+
+  <div class="act">
+    <span class="act-label">Act 1 · Data collection and evaluation runs</span>
+    <h3>Isolating dimension language as the variable</h3>
+    <p>The first phase retrieves target-language transcripts from BigQuery, scoped to a specific tenant and language filter. The same corpus is scored twice: once with English scoring dimensions as the baseline, and once with target-language dimensions as the test. The test run is repeated three times to distinguish a real language effect from random model variance and establish the LLM noise floor.</p>
+    <p>Both runs go through the scoring service with temperature set to 0. All traces are logged to Langfuse with start and end timestamps, which the meta-judges consume in Phase 2. The outputs are three files: baseline scores, test scores, and two consistency runs.</p>
+    <p>Running the same transcripts through both configurations is the key design decision. It's the only way to isolate dimension language as the variable causing any score difference rather than confounding it with transcript content.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>Baseline scores (English dims) · Test scores x3 (target-lang dims) · Langfuse traces for all runs</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 2 · Diagnosing the failure mode</span>
+    <h3>It was the translation, not the model</h3>
+    <p>Analyzing the mismatches between LLM scores and human scores on the Spanish corpus revealed a clear pattern: 88% of errors traced to translation artifacts — English fragments in outputs, phrasing that was technically correct but register-inappropriate, coaching that didn't sound natural to a native speaker.</p>
+    <p>That diagnosis shaped the entire framework. Each judge exists because analysis showed it was needed for a specific failure mode localization introduces, not because it seemed like a reasonable thing to check.</p>
+    <div class="insight">
+      <div class="insight-label">Key finding</div>
+      <p>LLM judges achieve ~69% accuracy on Spanish content. Most of the gap is not model degradation — it is the evaluation signal itself being corrupted by translation artifacts.</p>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 3 · Designing the gates</span>
+    <h3>Five judges, each targeting a distinct failure mode</h3>
+    <p>Each judge was designed to be independent and composable. The output-language judge is the prerequisite: language mixing in any field is a hard failure that corrupts everything downstream. Score-consistency detects instability across runs; its threshold was set above the English noise floor so the gate wouldn't reject its own baseline. Dimension-alignment catches the cases where the score looks right but the coaching is addressing the wrong thing. Feedback-quality surfaces generic outputs that fail the trainee despite passing numerical thresholds. Coaching-naturalness targets register and fluency in the target locale.</p>
+    <p>Thresholds were grounded in 6 published NLP studies rather than set by intuition. That grounding matters for two reasons: it makes the thresholds defensible to stakeholders, and it provides a principled starting point for future locales where you have no existing data.</p>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 4 · Human calibration layer</span>
+    <h3>Binary agreement over Cohen's κ</h3>
+    <p>The human calibration layer uses bilingual experts to validate the LLM judges before they're trusted in production. Annotation methodology uses binary agreement rather than Cohen's κ. The reason is practical: binary agreement is directly interpretable as a production threshold — you can say "gate releases at ≥80% agreement" and everyone understands what that means. Cohen's κ adjusts for chance agreement in a way that makes the number harder to reason about for non-statisticians reviewing gate decisions.</p>
+    <p>The coaching-naturalness judge is the one most dependent on this layer. It carries circularity risk (an LLM judging LLM output for naturalness), so it's treated as a regression signal only until human scores confirm it's calibrated for the target locale.</p>
+    <div class="result">
+      <span class="result-label">Result</span>
+      <span>≥80% human-LLM agreement on score accuracy · framework validated for Spanish, extensible to future locales</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">05</span>
+  <h2>What Made It Work</h2>
+  <div class="principles">
+    <div class="principle">
+      <div class="pnum">1</div>
+      <div class="pbody">
+        <h4>Diagnose before designing</h4>
+        <p>88% of failures had one root cause. Knowing that made the framework specific rather than generic — each judge exists because analysis showed it was needed, not because it seemed like a reasonable thing to check.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">2</div>
+      <div class="pbody">
+        <h4>Ground thresholds in literature</h4>
+        <p>Thresholds set by intuition get challenged. Thresholds grounded in 6 published NLP studies have a defense. They also transfer to new locales as principled starting points instead of guesses.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">3</div>
+      <div class="pbody">
+        <h4>Prefer interpretable metrics</h4>
+        <p>Binary agreement over Cohen's κ was a deliberate choice. The people reviewing release gate decisions are not statisticians. A metric that produces a directly actionable number earns more trust than one that requires explanation.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">06</span>
+  <h2>References</h2>
+
+  <span class="ref-section-label">Why Automated Evaluation Alone Is Insufficient</span>
+  <table class="ref-table">
+    <tr>
+      <th>Study</th>
+      <th>Key Finding</th>
+      <th>Influence on Framework Design</th>
+    </tr>
+    <tr>
+      <td>MM-Eval (2024)</td>
+      <td>LLM judges achieve ~68.9% accuracy on non-English content vs 50% random baseline</td>
+      <td>Justifies not trusting meta-judges as standalone gates for score accuracy and coaching naturalness</td>
+    </tr>
+    <tr>
+      <td>Multilingual LLM-as-a-Judge (2025)</td>
+      <td>Fleiss' Kappa 0.1&ndash;0.32 across languages; systematic undervaluation of non-English quality</td>
+      <td>Justifies human calibration for score accuracy</td>
+    </tr>
+    <tr>
+      <td>MMLU-ProX (2025)</td>
+      <td>88% of Spanish mismatches are translation artifacts, not model capability issues</td>
+      <td>Frames the problem as cross-lingual processing artifacts, not model limitations</td>
+    </tr>
+    <tr>
+      <td>Prompt Language Matching (2025)</td>
+      <td>English prompts take 25&ndash;35% longer on non-English content with double-digit accuracy drops</td>
+      <td>Informs the escalation path: prompt translation as the primary fallback when scoring drift is above the noise floor</td>
+    </tr>
+    <tr>
+      <td>Multilingual Prompt Localization (2026)</td>
+      <td>4,950 judge runs across 5 languages; partial localization can hurt more than full English</td>
+      <td>Validates testing prompt-language sensitivity; warns against partial translation of rubrics</td>
+    </tr>
+  </table>
+
+  <span class="ref-section-label" style="margin-top: 8px;">Benchmark Justifications</span>
+  <table class="ref-table">
+    <tr>
+      <th>Benchmark</th>
+      <th>Justification</th>
+    </tr>
+    <tr>
+      <td>Human agreement &ge; 80%</td>
+      <td>Practical threshold for binary agree/disagree annotation (Inter-Rater Reliability with LLMs, 2025). Simpler than Cohen's kappa, which is sensitive to marginal distributions on a 3-point scale and requires 2+ independent raters.</td>
+    </tr>
+    <tr>
+      <td>Noise-relative gate</td>
+      <td>Derived empirically from multiple Spanish domains with divergent noise floors. Fixed thresholds are miscalibrated across domains — a single ceiling can fail the pipeline's own English baseline on high-variance rubrics. The noise-relative formulation self-calibrates while preserving language-independent hard bounds.</td>
+    </tr>
+    <tr>
+      <td>Priority thresholds (2.9 / 2.5)</td>
+      <td>Aligned with existing evaluation infrastructure thresholds for internal consistency.</td>
+    </tr>
+    <tr>
+      <td>Score consistency &le; 10%</td>
+      <td>Set above the observed English-only noise floor so the gate does not reject the pipeline's own baseline performance.</td>
+    </tr>
+    <tr>
+      <td>Coaching naturalness &ge; 80% pass rate</td>
+      <td>Back-translation validation standard, adapted to binary pass/fail to eliminate Likert scale-interpretation variance across annotators.</td>
+    </tr>
+  </table>
+</div>
+
+<a href="/work/adaptive-persona" class="next">
+  <div>
+    <div class="next-lbl">Next Case Study</div>
+    <div class="next-title">Adaptive Persona Behavior</div>
+  </div>
+  <div class="next-arrow">→</div>
+</a>
+
+</CaseStudyLayout>
