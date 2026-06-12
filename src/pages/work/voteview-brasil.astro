@@ -1,0 +1,285 @@
+---
+import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
+---
+
+<CaseStudyLayout
+  title="VoteView Brasil"
+  description="Segmentation and abstention modeling for Pernambuco campaign teams — from raw TSE data to deployable insights."
+  accent="#f97316"
+  codeColor="#c2410c"
+  mermaidPrimary="#ffedd5"
+  mermaidPrimaryText="#7c2d12"
+  mermaidPrimaryBorder="#fdba74"
+>
+
+<span class="case-label">Personal Project · Open Data · Electoral Analysis</span>
+<h1>VoteView Brasil</h1>
+<p class="subtitle">Segmentation and abstention modeling for Pernambuco campaign teams — from raw TSE data to deployable insights.</p>
+
+<div class="meta">
+  <div class="meta-item">
+    <div class="meta-key">Role</div>
+    <div class="meta-val">Solo · Data Science + Full-Stack</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Stack</div>
+    <div class="meta-val">Python · scikit-learn · statsmodels · pandas · React · Supabase</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Data</div>
+    <div class="meta-val">TSE + IBGE · 185 municipalities · 60,172 sections · 3 election cycles</div>
+  </div>
+</div>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p>TSE publishes complete electoral results for every section in Brazil. IBGE publishes demographic data for every municipality. Neither is usable for campaign strategy out of the box. I built the ETL to join them, ran hypothesis-driven clustering to identify five distinct municipal profiles across three election cycles, then fitted OLS regression models explaining 54% of abstention variance. The main finding: elderly population share is the strongest predictor of abstention, and education's mobilizing effect is significantly stronger in federal elections than municipal ones — a distinction most campaign models miss by treating election types as equivalent.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">01</span>
+  <h2>The Challenge</h2>
+  <p>Campaign resource allocation depends on understanding which municipalities are persuadable, which are high-turnout, and which abstention patterns are structurally fixed vs. contingent on election type. TSE data is public and granular — vote totals per candidate, per section, per municipality, across three election cycles. But the raw CSVs use proprietary identifier codes that don't match IBGE's geographic schema, field names change between years, and there's no ready-made bridge between electoral behavior and demographic context.</p>
+  <p>The analytical question was: can you build a reliable segmentation of Pernambuco's 185 municipalities that is meaningful for campaign targeting — and can you model which demographic variables actually drive abstention, controlling for election type?</p>
+</div>
+
+<div class="section">
+  <span class="section-num">02</span>
+  <h2>Architecture</h2>
+  <p>The pipeline separates data infrastructure from analysis. The ETL loads and normalizes TSE and IBGE data into Supabase. The analysis notebooks pull from Supabase and progress in three stages: exploratory hypothesis testing, unsupervised municipal segmentation, and OLS regression modeling. The React frontend surfaces the segmentation and comparative analysis for campaign teams.</p>
+
+  <div class="diagram-wrap">
+    <div class="diagram-label">Pipeline</div>
+    <div class="mermaid">
+flowchart LR
+    TSE[TSE CSVs]:::source
+    IBGE[IBGE API]:::source
+    ETL[Python ETL
+normalize + join codes]:::etl
+    SB[(Supabase
+3 tables)]:::storage
+
+    NB01[Notebook 01
+EDA · H1–H10]:::analysis
+    NB02[Notebook 02
+K-Means clustering]:::analysis
+    NB03[Notebook 03
+OLS regression]:::analysis
+    UI[React frontend
+for campaign teams]:::ui
+
+    TSE & IBGE --> ETL --> SB
+    SB --> NB01 --> NB02 --> NB03
+    SB --> UI
+
+    classDef source fill:#1e293b,stroke:#334155,color:#64748b
+    classDef etl fill:#2a1a0a,stroke:#f97316,color:#fdba74
+    classDef storage fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    classDef analysis fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+    classDef ui fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">03</span>
+  <h2>The Work</h2>
+
+  <div class="act">
+    <span class="act-label">Act 1 · Data layer</span>
+    <h3>Joining two datasets that weren't designed to match</h3>
+    <p>TSE uses its own municipality codes; IBGE uses a seven-digit geocode. The transform step reconciles these, normalizes field names that changed between the 2020, 2022, and 2024 releases, and joins electoral behavior (vote counts, turnout, null votes) with demographic context (educational attainment, age distribution, gender). The pipeline is parameterized by state and year — loading Pernambuco across three cycles is three commands. Runs are idempotent: raw files are cached locally, and upserts handle re-runs without duplicating rows.</p>
+    <div class="result">
+      <span class="result-label">Output</span>
+      <span>60,172 sections · 185 municipalities · 3 cycles · ~20 demographic variables per municipality</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 2 · Municipal segmentation</span>
+    <h3>Five profiles, not one electorate</h3>
+    <p>Before fitting any regression, I tested ten hypotheses about how demographic variables relate to turnout across election types (H1–H10). That phase established which features were worth including and revealed that election type interacts with almost every demographic predictor — the same municipality behaves differently in 2022 (federal) vs 2020/2024 (municipal).</p>
+    <p>K-Means clustering on seven features (education, age distribution, gender, metropolitan status, turnout) identified five distinct municipal profiles. K was selected via elbow, silhouette, and Davies-Bouldin metrics; final silhouette ≈ 0.21, with Kruskal-Wallis confirming significant turnout separation between clusters in all three years (H = 53–77, p &lt; 0.001).</p>
+
+    <table class="cluster-table">
+      <tr>
+        <th>Profile</th>
+        <th>n (2022)</th>
+        <th>Defining characteristics</th>
+      </tr>
+      <tr>
+        <td>RMR urban</td>
+        <td>13</td>
+        <td>All 13 Recife metro municipalities · 12% higher education · 85% turnout · perfectly stable across all 3 years</td>
+      </tr>
+      <tr>
+        <td>Interior peri-urban</td>
+        <td>22</td>
+        <td>Interior cities with RMR-comparable education (~13% higher ed) · likely Caruaru, Petrolina · least cohesive cluster</td>
+      </tr>
+      <tr>
+        <td>Interior young, low education</td>
+        <td>51</td>
+        <td>27% without formal education · 40% age 16–34 · 81% turnout</td>
+      </tr>
+      <tr>
+        <td>Interior elderly, low turnout</td>
+        <td>47</td>
+        <td>35% without formal education · 22% age 60+ · <strong>75% turnout</strong> (lowest of all profiles) · most volatile between years</td>
+      </tr>
+      <tr>
+        <td>Interior typical</td>
+        <td>52</td>
+        <td>Median interior profile · used as regression reference category</td>
+      </tr>
+    </table>
+
+    <p>65% of municipalities changed cluster between 2020 and 2024 — not noise, but a structural finding. The "interior elderly" profile swells in 2022 (federal elections): municipalities with average interior demographics behave like the elderly low-turnout profile when the election is national rather than local.</p>
+
+    <div class="finding">
+      <div class="finding-label">Key finding</div>
+      <p>Feature importance (ANOVA F-statistic) shifts between years. In 2020 and 2022, <code>pct_sem_instrucao</code> dominates (F ≈ 83–120). In 2024, <code>metro_flag</code> explodes to F ≈ 500 — the 2024 clustering is effectively a binary RMR/interior split. The metropolitan divide widened in 2024 municipal elections.</p>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 3 · Abstention model</span>
+    <h3>54% of variance explained, with three model specifications</h3>
+    <p>Three OLS specifications were fitted with HC3 robust standard errors (Breusch-Pagan confirmed heteroscedasticidade in all models): Model A per year separately, Model B pooled with year fixed effects and a <code>metro_flag × year</code> interaction, and Model C pooled with cluster dummies replacing the interaction. VIF for all features was below 5 — no multicollinearity issues.</p>
+    <p>Model A per year was the most revealing step. Running separate regressions before the pooled model made the election-type interaction visible directly in the coefficients, rather than requiring it to be specified upfront. The pooled Model B then formalized what the per-year models showed.</p>
+    <p>Model C (R² adj = 0.54) confirmed that the K-Means profiles capture real variance beyond what the continuous demographic variables explain alone — the cluster dummies are independently significant after controlling for all other features.</p>
+
+    <table class="cluster-table">
+      <tr>
+        <th>Predictor</th>
+        <th>Direction</th>
+        <th>Consistency</th>
+      </tr>
+      <tr>
+        <td>pct_60_mais</td>
+        <td>Positive (more elderly → more abstention)</td>
+        <td>Significant in all years, coef 1.18–1.49 — strongest predictor overall</td>
+      </tr>
+      <tr>
+        <td>pct_jovem</td>
+        <td>Positive (more young voters → more abstention)</td>
+        <td>Significant in all years, coef 0.78–0.89</td>
+      </tr>
+      <tr>
+        <td>pct_superior</td>
+        <td>Negative (higher education → less abstention)</td>
+        <td>Significant in 2020 and 2024 (municipal), near-zero in 2022 (federal)</td>
+      </tr>
+      <tr>
+        <td>log_eleitores</td>
+        <td>Positive (larger municipality → more abstention)</td>
+        <td>Significant in 2022 and 2024</td>
+      </tr>
+    </table>
+
+    <div class="finding">
+      <div class="finding-label">Key finding</div>
+      <p>The effect of higher education on abstention is election-type dependent. In federal elections (2022), <code>pct_superior</code> is near-zero and non-significant. In municipal elections (2020, 2024), it is the second-strongest predictor (coef ≈ −0.50 to −0.53, p &lt; 0.001). Campaign models that don't distinguish election type will systematically misestimate the mobilizing effect of education on turnout.</p>
+    </div>
+
+    <div class="result">
+      <span class="result-label">Model C</span>
+      <span>R² adj = 0.54 · 553 observations · HC3 SE · VIF max = 4.7 · cluster dummies significant beyond continuous predictors</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">04</span>
+  <h2>What Made It Work</h2>
+  <div class="principles">
+    <div class="principle">
+      <div class="pnum">1</div>
+      <div class="pbody">
+        <h4>Hypotheses before models</h4>
+        <p>Testing H1–H10 before fitting any regression made the feature selection principled and revealed the election-type interaction before it needed to be specified. The pooled model's interaction terms came from what the per-year EDA showed, not from guessing what might matter.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">2</div>
+      <div class="pbody">
+        <h4>Fit per-year before pooling</h4>
+        <p>Running Model A separately for each year before building the pooled Model B was the methodological decision that exposed the education × election-type interaction. If only the pooled model had been fitted, that interaction would have required explicit specification — and there would have been no evidence for including it.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">3</div>
+      <div class="pbody">
+        <h4>Unsupervised profiles as regression features</h4>
+        <p>The K-Means clusters were initially a segmentation tool for the frontend. Adding them as dummies in Model C increased R² adj above the continuous-only model — confirming that behavioral profiles capture patterns that demographic ratios alone don't fully explain. The unsupervised and supervised stages informed each other.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="/" class="next">
+  <div>
+    <div class="next-lbl">Back to work</div>
+    <div class="next-title">All Projects</div>
+  </div>
+  <div class="next-arrow">→</div>
+</a>
+
+</CaseStudyLayout>
+
+<style is:global>
+  .finding {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    font-family: system-ui;
+    font-size: 13px;
+    color: #92400e;
+  }
+  .finding-label {
+    font-family: monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #c2410c;
+    margin-bottom: 6px;
+  }
+  .finding p {
+    color: #92400e;
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .cluster-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui;
+    font-size: 12px;
+    margin: 20px 0;
+  }
+  .cluster-table th {
+    font-family: monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .cluster-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #64748b;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .cluster-table td:first-child {
+    font-family: monospace;
+    font-size: 11px;
+    color: #f97316;
+    white-space: nowrap;
+  }
+</style>
