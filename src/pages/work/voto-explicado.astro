@@ -7,9 +7,9 @@ import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
   description="Congressional voting data made readable for any Brazilian citizen."
   accent="#22c55e"
   codeColor="#16a34a"
-  mermaidPrimary="#dcfce7"
-  mermaidPrimaryText="#14532d"
-  mermaidPrimaryBorder="#86efac"
+  mermaidPrimary="#0a2014"
+  mermaidPrimaryText="#dcfce7"
+  mermaidPrimaryBorder="#22c55e"
 >
 
 <span class="case-label">Personal Project · Civic Tech</span>
@@ -68,13 +68,13 @@ flowchart LR
     USER --> UI --> SB
     UI --> SEARCH --> TAVILY --> GPT --> CACHE
 
-    classDef cron fill:#dcfce7,stroke:#22c55e,color:#14532d
-    classDef external fill:#1e293b,stroke:#334155,color:#64748b
-    classDef storage fill:#f1f5f9,stroke:#94a3b8,color:#475569
-    classDef user fill:#f1f5f9,stroke:#cbd5e1,color:#475569
-    classDef ui fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
-    classDef search fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
-    classDef llm fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
+    classDef cron fill:#0a2014,stroke:#22c55e,color:#86efac
+    classDef external fill:#141820,stroke:#2a3040,color:#6a7080
+    classDef storage fill:#141820,stroke:#2a3040,color:#6a7080
+    classDef user fill:#141820,stroke:#2a3040,color:#6a7080
+    classDef ui fill:#0a1a30,stroke:#3b82f6,color:#93c5fd
+    classDef search fill:#1a0f2e,stroke:#8b5cf6,color:#c4b5fd
+    classDef llm fill:#1a0f2e,stroke:#8b5cf6,color:#c4b5fd
     </div>
   </div>
 </div>
@@ -157,8 +157,9 @@ flowchart LR
 
 <style is:global>
   .demo-link {
-    color: #64748b;
+    color: #4a4a58;
     text-decoration: none;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid #2a2a38;
   }
+  .demo-link:hover { color: #c8c4be; border-color: #4a4a58; }
 </style>

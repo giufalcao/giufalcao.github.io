@@ -7,8 +7,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <style is:global>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #ffffff;
-    color: #1e293b;
+    background: #0a0a0c;
+    color: #c8c4be;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 15px;
     line-height: 1.85;
@@ -17,33 +17,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 48px 28px 100px;
   }
 
-  nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 80px; }
-  .nav-name { font-family: system-ui, sans-serif; font-size: 13px; font-weight: 600; color: #64748b; letter-spacing: 0.02em; }
-  .nav-links { display: flex; gap: 24px; }
+  nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 72px; }
+  .nav-links { display: flex; gap: 24px; margin-left: auto; }
   .nav-links a {
     font-family: monospace;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #94a3b8;
+    color: #2a2a38;
     text-decoration: none;
     transition: color 0.15s;
   }
-  .nav-links a:hover { color: #64748b; }
+  .nav-links a:hover { color: #5a5a6e; }
 
   .hero { margin-bottom: 80px; }
-  h1 { font-family: system-ui, sans-serif; font-size: 42px; font-weight: 800; color: #0f172a; line-height: 1.1; margin-bottom: 10px; }
-  .headline { font-family: monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: #475569; margin-bottom: 28px; }
-  .bio { color: #64748b; font-size: 16px; line-height: 1.8; max-width: 560px; }
+  h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 68px;
+    font-weight: bold;
+    color: #f0ece6;
+    line-height: 1.05;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .headline {
+    font-family: monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #252530;
+    margin-bottom: 24px;
+  }
+  .bio { color: #3a3a48; font-size: 15px; line-height: 1.8; max-width: 540px; }
 
   .section-header {
     font-family: monospace;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: #cbd5e1;
-    margin-bottom: 20px;
-    margin-top: 64px;
+    color: #1e1e26;
+    margin-bottom: 16px;
+    margin-top: 60px;
   }
 
   .project-list { display: flex; flex-direction: column; gap: 2px; }
@@ -56,8 +70,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     overflow: hidden;
     transition: background 0.12s;
   }
-  .project-item:hover { background: #f1f5f9; }
+  .project-item:hover { background: #101014; }
   .project-item:hover .project-arrow { opacity: 1; }
+  .project-item:hover .project-title { color: #f0ece6; }
 
   .project-accent { width: 3px; flex-shrink: 0; }
   .project-body { padding: 20px 22px; flex: 1; }
@@ -66,14 +81,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #94a3b8;
+    color: #252530;
     margin-bottom: 5px;
   }
-  .project-title { font-family: system-ui, sans-serif; font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 5px; line-height: 1.3; }
-  .project-desc { font-family: system-ui, sans-serif; font-size: 13px; color: #475569; line-height: 1.6; }
+  .project-title {
+    font-family: system-ui, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #c8c4be;
+    margin-bottom: 5px;
+    line-height: 1.3;
+    transition: color 0.12s;
+  }
+  .project-desc { font-family: system-ui, sans-serif; font-size: 13px; color: #2e2e40; line-height: 1.6; }
   .project-arrow {
     font-size: 16px;
-    color: #94a3b8;
+    color: #2a2a38;
     padding: 20px 18px 20px 0;
     display: flex;
     align-items: center;
@@ -81,34 +104,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: opacity 0.12s;
   }
 
-  .divider { height: 1px; background: #e2e8f0; margin: 6px 0; }
+  .divider { height: 1px; background: #141418; margin: 4px 0; }
 
   footer {
     margin-top: 96px;
     padding-top: 32px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #141418;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
   }
-  .footer-name { font-family: system-ui, sans-serif; font-size: 13px; color: #1e293b; }
+  .footer-name { font-family: system-ui, sans-serif; font-size: 13px; color: #2e2e3c; }
   .footer-links { display: flex; gap: 20px; }
   .footer-links a {
     font-family: monospace;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #94a3b8;
+    color: #252530;
     text-decoration: none;
     transition: color 0.15s;
   }
-  .footer-links a:hover { color: #64748b; }
+  .footer-links a:hover { color: #5a5a6e; }
 </style>
 
 <nav>
-  <span class="nav-name">Giulia Falcão</span>
   <div class="nav-links">
     <a href="https://linkedin.com/in/giulia-cavalcanti" target="_blank" rel="noopener">LinkedIn</a>
     <a href="https://github.com/giufalcao" target="_blank" rel="noopener">GitHub</a>

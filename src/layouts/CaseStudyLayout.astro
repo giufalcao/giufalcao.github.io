@@ -36,15 +36,18 @@ const pageDescription = description ?? title;
   <slot />
   <script define:vars={{ mermaidPrimary, mermaidPrimaryText, mermaidPrimaryBorder }}>
     mermaid.initialize({
-      theme: 'neutral',
+      theme: 'dark',
       themeVariables: {
-        background: '#f8fafc',
+        background: '#0f0f14',
         primaryColor: mermaidPrimary,
         primaryTextColor: mermaidPrimaryText,
         primaryBorderColor: mermaidPrimaryBorder,
-        lineColor: '#94a3b8',
-        secondaryColor: '#f1f5f9',
-        tertiaryColor: '#f8fafc',
+        lineColor: '#3a3a48',
+        secondaryColor: '#1a1a22',
+        tertiaryColor: '#141418',
+        edgeLabelBackground: '#0f0f14',
+        clusterBkg: '#141418',
+        titleColor: '#c8c4be',
       },
     });
   </script>
@@ -54,8 +57,8 @@ const pageDescription = description ?? title;
 <style is:global>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #ffffff;
-    color: #1e293b;
+    background: #0a0a0c;
+    color: #b0acaa;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 15px;
     line-height: 1.85;
@@ -77,13 +80,13 @@ const pageDescription = description ?? title;
     font-family: system-ui, sans-serif;
     font-size: 38px;
     font-weight: 800;
-    color: #0f172a;
+    color: #f0ece6;
     line-height: 1.1;
     margin-bottom: 14px;
   }
   .subtitle {
     font-size: 18px;
-    color: #64748b;
+    color: #4a4a58;
     font-family: system-ui;
     margin-bottom: 40px;
     line-height: 1.5;
@@ -95,20 +98,20 @@ const pageDescription = description ?? title;
     flex-wrap: wrap;
     margin-bottom: 48px;
     padding-bottom: 36px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #1a1a22;
   }
   .meta-key {
     font-family: monospace;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #94a3b8;
+    color: #2a2a38;
     margin-bottom: 4px;
   }
-  .meta-val { font-size: 13px; color: #64748b; }
+  .meta-val { font-size: 13px; color: #5a5a68; }
 
   .tldr {
-    background: #f8fafc;
+    background: #0f0f14;
     border-left: 3px solid var(--accent);
     padding: 22px 26px;
     margin-bottom: 56px;
@@ -123,7 +126,7 @@ const pageDescription = description ?? title;
     margin-bottom: 10px;
   }
   .tldr p {
-    color: #64748b;
+    color: #5a5a68;
     font-family: system-ui;
     font-size: 14px;
     line-height: 1.75;
@@ -132,7 +135,7 @@ const pageDescription = description ?? title;
   .section-num {
     font-family: monospace;
     font-size: 11px;
-    color: #94a3b8;
+    color: #2a2a38;
     margin-bottom: 6px;
     display: block;
   }
@@ -140,13 +143,13 @@ const pageDescription = description ?? title;
     font-family: system-ui, sans-serif;
     font-size: 22px;
     font-weight: 700;
-    color: #0f172a;
+    color: #e8e4de;
     margin-bottom: 18px;
   }
-  p { color: #64748b; margin-bottom: 16px; }
-  strong { color: #0f172a; font-style: normal; }
+  p { color: #5a5a68; margin-bottom: 16px; }
+  strong { color: #d8d4ce; font-style: normal; }
   code {
-    background: #f1f5f9;
+    background: #141418;
     padding: 1px 6px;
     border-radius: 3px;
     color: var(--code-color);
@@ -162,12 +165,12 @@ const pageDescription = description ?? title;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #94a3b8;
+    color: #2a2a38;
     margin-bottom: 12px;
   }
   .mermaid {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: #0f0f14;
+    border: 1px solid #1a1a22;
     border-radius: 8px;
     padding: 24px;
     overflow-x: auto;
@@ -176,14 +179,14 @@ const pageDescription = description ?? title;
   .act {
     padding-top: 28px;
     margin-top: 28px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #1a1a22;
   }
   .act-label {
     font-family: monospace;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #94a3b8;
+    color: #2a2a38;
     margin-bottom: 8px;
     display: block;
   }
@@ -191,7 +194,7 @@ const pageDescription = description ?? title;
     font-family: system-ui, sans-serif;
     font-size: 17px;
     font-weight: 700;
-    color: #0f172a;
+    color: #d8d4ce;
     margin-bottom: 12px;
   }
 
@@ -201,11 +204,12 @@ const pageDescription = description ?? title;
     align-items: baseline;
     margin-top: 18px;
     padding: 12px 16px;
-    background: #f8fafc;
+    background: #0f0f14;
     border-radius: 6px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #1a1a22;
     font-family: system-ui;
     font-size: 13px;
+    color: #b0acaa;
   }
   .result-label {
     font-family: monospace;
@@ -231,7 +235,7 @@ const pageDescription = description ?? title;
     display: block;
   }
   .callout p {
-    color: #64748b;
+    color: #5a5a68;
     font-family: system-ui;
     font-size: 13px;
     margin: 0;
@@ -257,7 +261,7 @@ const pageDescription = description ?? title;
     font-family: system-ui, sans-serif;
     font-size: 15px;
     font-weight: 700;
-    color: #0f172a;
+    color: #d8d4ce;
     margin-bottom: 5px;
   }
   .pbody p { font-size: 14px; margin: 0; }
@@ -265,7 +269,7 @@ const pageDescription = description ?? title;
   .next {
     margin-top: 72px;
     padding-top: 36px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #1a1a22;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -276,14 +280,14 @@ const pageDescription = description ?? title;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #94a3b8;
+    color: #2a2a38;
     margin-bottom: 6px;
   }
   .next-title {
     font-family: system-ui;
     font-size: 18px;
     font-weight: 700;
-    color: #0f172a;
+    color: #f0ece6;
   }
   .next-arrow {
     font-size: 22px;

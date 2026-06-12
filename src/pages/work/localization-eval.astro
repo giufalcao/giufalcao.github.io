@@ -24,14 +24,14 @@ const mermaidDiagram = `flowchart LR
     GATE -->|meets threshold| PASS
     GATE -->|below threshold| FAIL
 
-    classDef storage fill:#f1f5f9,stroke:#cbd5e1,color:#475569
-    classDef run fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
-    classDef prereq fill:#3b0a0a,stroke:#ef4444,color:#fca5a5
-    classDef judge fill:#f1f5f9,stroke:#94a3b8,color:#475569
-    classDef human fill:#2d1b4e,stroke:#8b5cf6,color:#c4b5fd
-    classDef gate fill:#1a1f0a,stroke:#84cc16,color:#86efac
-    classDef pass fill:#1a2f1a,stroke:#10b981,color:#6ee7b7
-    classDef fail fill:#1e293b,stroke:#334155,color:#64748b`;
+    classDef storage fill:#141820,stroke:#2a3040,color:#6a7080
+    classDef run fill:#0f2230,stroke:#3b82f6,color:#93c5fd
+    classDef prereq fill:#2a0a0a,stroke:#ef4444,color:#fca5a5
+    classDef judge fill:#141820,stroke:#2a3040,color:#6a7080
+    classDef human fill:#1e0e36,stroke:#8b5cf6,color:#c4b5fd
+    classDef gate fill:#141a06,stroke:#84cc16,color:#86efac
+    classDef pass fill:#0e1e10,stroke:#10b981,color:#6ee7b7
+    classDef fail fill:#16161e,stroke:#2a2a3a,color:#4a4a58`;
 ---
 
 <CaseStudyLayout
@@ -39,31 +39,31 @@ const mermaidDiagram = `flowchart LR
   description="Building a reliable gate for LLM evaluation quality across languages."
   accent="#14b8a6"
   codeColor="#0f766e"
-  mermaidPrimary="#ccfbf1"
-  mermaidPrimaryText="#134e4a"
-  mermaidPrimaryBorder="#5eead4"
+  mermaidPrimary="#0f2e28"
+  mermaidPrimaryText="#ccfbf1"
+  mermaidPrimaryBorder="#14b8a6"
 >
 
 <style is:global>
   .judge-table { width: 100%; border-collapse: collapse; font-family: system-ui; font-size: 12px; margin: 20px 0; }
-  .judge-table th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-  .judge-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; vertical-align: top; line-height: 1.5; }
+  .judge-table th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #2a2a38; padding: 8px 12px; text-align: left; border-bottom: 1px solid #1a1a22; }
+  .judge-table td { padding: 10px 12px; border-bottom: 1px solid #141418; color: #5a5a68; vertical-align: top; line-height: 1.5; }
   .judge-table td:first-child { font-family: monospace; font-size: 11px; color: #14b8a6; white-space: nowrap; }
-  .judge-table td:nth-child(3) { font-family: monospace; font-size: 11px; color: #64748b; }
-  .judge-table tr:hover td { background: #f8fafc; }
+  .judge-table td:nth-child(3) { font-family: monospace; font-size: 11px; color: #4a4a58; }
+  .judge-table tr:hover td { background: #0f0f14; }
   .prereq { color: #ef4444 !important; }
 
-  .result span { color: #0f766e; }
+  .result span { color: #14b8a6; }
 
-  .insight { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 14px 16px; margin: 16px 0; font-family: system-ui; font-size: 13px; }
-  .insight-label { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #15803d; margin-bottom: 6px; }
-  .insight p { color: #166534; margin: 0; font-size: 13px; }
+  .insight { background: #0a1e18; border: 1px solid #14b8a6; border-radius: 6px; padding: 14px 16px; margin: 16px 0; font-family: system-ui; font-size: 13px; }
+  .insight-label { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #14b8a6; margin-bottom: 6px; }
+  .insight p { color: #4a8a78; margin: 0; font-size: 13px; }
 
   .ref-table { width: 100%; border-collapse: collapse; font-family: system-ui; font-size: 12px; margin: 16px 0 28px; }
-  .ref-table th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-  .ref-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; vertical-align: top; line-height: 1.5; font-size: 12px; }
+  .ref-table th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #2a2a38; padding: 8px 12px; text-align: left; border-bottom: 1px solid #1a1a22; }
+  .ref-table td { padding: 10px 12px; border-bottom: 1px solid #141418; color: #5a5a68; vertical-align: top; line-height: 1.5; font-size: 12px; }
   .ref-table td:first-child { color: #14b8a6; font-weight: 600; white-space: nowrap; }
-  .ref-section-label { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 12px; display: block; }
+  .ref-section-label { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #2a2a38; margin-bottom: 12px; display: block; }
 </style>
 
 <span class="case-label">Case Study · ReflexAI</span>
