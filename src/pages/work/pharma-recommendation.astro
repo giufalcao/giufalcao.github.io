@@ -1,0 +1,161 @@
+---
+import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
+
+const mermaidDiagram = `flowchart LR
+    S3[(AWS S3\\nraw data)]:::storage
+    PARAM{parameter:\\ntraining or inference}:::param
+
+    DP_TR[Data Preparation\\ntraining rules]:::optimized
+    FZ_TR[Featurization\\ntraining rules]:::optimized
+    XG[XGBoost Training]:::model
+    MF[(MLflow Registry\\nChampion / Challenger)]:::registry
+
+    DP_INF[Data Preparation\\ninference rules]:::optimized
+    FZ_INF[Featurization\\ninference rules]:::optimized
+    PP[Post-processing\\nclinical rules]:::inference
+    OUT[(Output\\nRecommendations)]:::storage
+
+    S3 --> PARAM
+    PARAM -->|training| DP_TR --> FZ_TR --> XG --> MF
+    PARAM -->|inference| DP_INF --> FZ_INF --> PP --> OUT
+    MF -.->|promoted model| PP
+
+    classDef storage fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+    classDef param fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
+    classDef optimized fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    classDef model fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    classDef registry fill:#d1fae5,stroke:#10b981,color:#065f46
+    classDef inference fill:#f1f5f9,stroke:#cbd5e1,color:#475569`;
+---
+
+<CaseStudyLayout
+  title="Pharmaceutical Recommendation System"
+  description="From manual notebooks to a fully automated pipeline."
+  accent="#3b82f6"
+  codeColor="#1d4ed8"
+  mermaidPrimary="#dbeafe"
+  mermaidPrimaryText="#1e3a5f"
+  mermaidPrimaryBorder="#93c5fd"
+>
+
+<span class="case-label">Case Study · Thoughtworks</span>
+<h1>Pharmaceutical Recommendation System</h1>
+<p class="subtitle">From manual notebooks to a fully automated pipeline.</p>
+
+<div class="meta">
+  <div class="meta-item">
+    <div class="meta-key">Role</div>
+    <div class="meta-val">Senior Data Scientist</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Stack</div>
+    <div class="meta-val">Databricks · PySpark · MLflow · XGBoost · AWS S3</div>
+  </div>
+  <div class="meta-item">
+    <div class="meta-key">Outcome</div>
+    <div class="meta-val">60% cost reduction · 79% faster runtime · fully automated</div>
+  </div>
+</div>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p>A pharmaceutical client had a recommendation system built by another consultancy. Every month, someone manually ran each Databricks notebook in sequence on an 8xl cluster with hardcoded parameters. I joined at Thoughtworks to productionize the full pipeline: convert notebooks to parameterized Python scripts, automate the workflow, optimize the bottlenecks, and add MLflow model management with Champion/Challenger promotion. Cost dropped from $16,380 to $312 per run. Runtime cut by 79%.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">01</span>
+  <h2>The Challenge</h2>
+  <p>The system worked. Every month someone sat down, opened each Databricks notebook, and ran them in sequence: data prep, featurization, training or inference, post-processing. It had never been automated because it had never needed to be. Manual execution was the process.</p>
+  <p>Every parameter was hardcoded. The cluster was 8xl across the board, not because it was measured to be necessary, but because no one had checked. And every month brought friction: notebooks breaking mid-run, parameters needing edits, the inference stage requiring close attention because of how many rules it carried.</p>
+  <p>The post-processing in inference was the most sensitive part. This was a patient treatment recommendation system, and the rules encoded real clinical constraints: skip anything already recommended last month, filter by treatment line, account for full patient history. Getting those wrong meant wrong recommendations. They had to be read carefully and preserved exactly through any refactor.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">02</span>
+  <h2>Architecture</h2>
+  <p>One parameterized Databricks workflow, two paths. Pass <code>training</code> and it runs through Data Preparation and Featurization with training-specific rules, trains the XGBoost model, and registers it in MLflow via Champion/Challenger promotion. Pass <code>inference</code> and it runs the same shared stages with inference-specific rules, loads the promoted model, and runs it through the clinical post-processing layer to produce recommendations.</p>
+  <p>Optimization work targeted Data Preparation and Featurization, the heaviest stages in both paths.</p>
+
+  <div class="diagram-wrap">
+    <div class="diagram-label">Pipeline overview</div>
+    <div class="mermaid" set:html={mermaidDiagram} />
+  </div>
+  <p style="font-size:13px; color:#475569; margin-top:8px;">Blue: stages optimized in both paths. Data Prep and Featurization run differently depending on the mode. The promoted model from MLflow feeds the inference post-processing.</p>
+</div>
+
+<div class="section">
+  <span class="section-num">03</span>
+  <h2>The Work</h2>
+
+  <div class="act">
+    <span class="act-label">Act 1 · Reading the system</span>
+    <h3>Understand what's there before changing it</h3>
+    <p>The first week was spent reading, not writing. Each notebook had logic that needed to be understood before it could be touched: what transformations were applied, why certain parameters existed, how the clinical rules in post-processing were structured. The inference filters crossed patient history, treatment lines, and the previous month's output. Any mistake there would surface as wrong recommendations.</p>
+    <p>Reading the code also surfaced where the real inefficiencies were: repeated DataFrame computations in Data Preparation, oversized cluster allocation in Featurization, and no model management beyond saving outputs manually to S3.</p>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 2 · Data Preparation</span>
+    <h3>Removing redundant computation</h3>
+    <p>The data preparation stage recalculated the same intermediate DataFrames multiple times across the pipeline. Profiling the execution plan made it concrete: results that could be reused were being recomputed on each access.</p>
+    <p>Adding <code>spark.cache()</code> at the right checkpoints eliminated the redundancy. The stage was also migrated from mixed Pandas/PySpark to pure PySpark to use distributed processing properly.</p>
+    <div class="result">
+      <span class="result-label">Result</span>
+      <span>3h 15m → 40 min · $54.93 → $11.27 per run</span>
+    </div>
+  </div>
+
+  <div class="act">
+    <span class="act-label">Act 3 · Featurization and productionization</span>
+    <h3>From notebooks to a scheduled, parameterized workflow</h3>
+    <p>The featurization stage was rewritten in PySpark. All notebook code across the pipeline was converted into modular Python scripts, and every parameter that had been hardcoded was extracted and made configurable through the Databricks workflow definition.</p>
+    <p>The workflow was scheduled to run automatically. MLflow was added for model versioning, metric tracking, and Champion/Challenger promotion: each cycle registers and evaluates candidate models, and the winner gets promoted without manual comparison.</p>
+    <p>The cluster dropped from 8xl to 4xl. Not from one specific change, but as a consequence of right-sizing: once the pipeline only did what it needed, the compute requirement followed.</p>
+    <div class="result">
+      <span class="result-label">Result</span>
+      <span>$16,380 → $312 per run · 8xl → 4xl cluster · zero manual steps per cycle</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="section-num">04</span>
+  <h2>What Made It Work</h2>
+  <div class="principles">
+    <div class="principle">
+      <div class="pnum">1</div>
+      <div class="pbody">
+        <h4>Read before refactoring</h4>
+        <p>The clinical rules in post-processing were not mine to redesign. They belonged to the client's domain. Understanding them took time, but it was the only way to be confident that any change to the code left the logic intact.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">2</div>
+      <div class="pbody">
+        <h4>Profile before optimizing</h4>
+        <p>The 8xl cluster was a safe default chosen when no one had measured actual requirements. Profiling the DAG identified exactly where compute was being wasted. That made the optimizations specific rather than speculative.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="pnum">3</div>
+      <div class="pbody">
+        <h4>Done means it runs without you</h4>
+        <p>Faster notebooks are still notebooks. The measure of productionization was whether the pipeline could be scheduled, run, and managed without anyone opening a Databricks UI to press play.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="/work/tucana-care" class="next">
+  <div>
+    <div class="next-lbl">Next Project</div>
+    <div class="next-title">Tucana Care</div>
+  </div>
+  <div class="next-arrow">→</div>
+</a>
+
+</CaseStudyLayout>
+
+<style is:global>
+  .result span { color: #6ee7b7; }
+</style>
