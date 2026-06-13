@@ -7,8 +7,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <style is:global>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #0a0a0c;
-    color: #c8c4be;
+    background: #ffffff;
+    color: #374151;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 15px;
     line-height: 1.85;
@@ -24,18 +24,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #2a2a38;
+    color: #9ca3af;
     text-decoration: none;
     transition: color 0.15s;
   }
-  .nav-links a:hover { color: #5a5a6e; }
+  .nav-links a:hover { color: #1d4ed8; }
 
   .hero { margin-bottom: 80px; }
   h1 {
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 68px;
     font-weight: bold;
-    color: #f0ece6;
+    color: #0f172a;
     line-height: 1.05;
     margin-bottom: 12px;
     letter-spacing: -0.01em;
@@ -45,89 +45,91 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #252530;
+    color: #1d4ed8;
     margin-bottom: 24px;
   }
-  .bio { color: #3a3a48; font-size: 15px; line-height: 1.8; max-width: 540px; }
+  .bio { color: #374151; font-size: 15px; line-height: 1.8; max-width: 540px; }
 
   .section-header {
     font-family: monospace;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: #1e1e26;
-    margin-bottom: 16px;
+    color: #9ca3af;
+    margin-bottom: 12px;
     margin-top: 60px;
   }
 
-  .project-list { display: flex; flex-direction: column; gap: 2px; }
+  .project-list { display: flex; flex-direction: column; gap: 6px; }
 
   .project-item {
     display: flex;
     gap: 0;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
-    transition: background 0.12s;
+    border: 0.5px solid #e5e7eb;
+    background: #f9fafb;
+    transition: background 0.12s, border-color 0.12s;
   }
-  .project-item:hover { background: #101014; }
+  .project-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
   .project-item:hover .project-arrow { opacity: 1; }
-  .project-item:hover .project-title { color: #f0ece6; }
+  .project-item:hover .project-title { color: #1d4ed8; }
 
   .project-accent { width: 3px; flex-shrink: 0; }
-  .project-body { padding: 20px 22px; flex: 1; }
+  .project-body { padding: 18px 20px; flex: 1; }
   .project-type {
     font-family: monospace;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #252530;
-    margin-bottom: 5px;
+    color: #1d4ed8;
+    margin-bottom: 4px;
   }
   .project-title {
     font-family: system-ui, sans-serif;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
-    color: #c8c4be;
-    margin-bottom: 5px;
+    color: #0f172a;
+    margin-bottom: 4px;
     line-height: 1.3;
     transition: color 0.12s;
   }
-  .project-desc { font-family: system-ui, sans-serif; font-size: 13px; color: #2e2e40; line-height: 1.6; }
+  .project-desc { font-family: system-ui, sans-serif; font-size: 13px; color: #6b7280; line-height: 1.6; }
   .project-arrow {
     font-size: 16px;
-    color: #2a2a38;
-    padding: 20px 18px 20px 0;
+    color: #9ca3af;
+    padding: 18px 16px 18px 0;
     display: flex;
     align-items: center;
     opacity: 0;
     transition: opacity 0.12s;
   }
 
-  .divider { height: 1px; background: #141418; margin: 4px 0; }
+  .divider { display: none; }
 
   footer {
     margin-top: 96px;
     padding-top: 32px;
-    border-top: 1px solid #141418;
+    border-top: 1px solid #e5e7eb;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
   }
-  .footer-name { font-family: system-ui, sans-serif; font-size: 13px; color: #2e2e3c; }
+  .footer-name { font-family: system-ui, sans-serif; font-size: 13px; color: #374151; }
   .footer-links { display: flex; gap: 20px; }
   .footer-links a {
     font-family: monospace;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #252530;
+    color: #9ca3af;
     text-decoration: none;
     transition: color 0.15s;
   }
-  .footer-links a:hover { color: #5a5a6e; }
+  .footer-links a:hover { color: #1d4ed8; }
 </style>
 
 <nav>
@@ -156,8 +158,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="project-arrow">→</div>
   </a>
 
-  <div class="divider"></div>
-
   <a class="project-item" href="/work/adaptive-persona">
     <div class="project-accent" style="background:#8b5cf6;"></div>
     <div class="project-body">
@@ -167,8 +167,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
     <div class="project-arrow">→</div>
   </a>
-
-  <div class="divider"></div>
 
   <a class="project-item" href="/work/pharma-recommendation">
     <div class="project-accent" style="background:#3b82f6;"></div>
@@ -195,8 +193,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="project-arrow">→</div>
   </a>
 
-  <div class="divider"></div>
-
   <a class="project-item" href="/work/voto-explicado">
     <div class="project-accent" style="background:#22c55e;"></div>
     <div class="project-body">
@@ -206,8 +202,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
     <div class="project-arrow">→</div>
   </a>
-
-  <div class="divider"></div>
 
   <a class="project-item" href="/work/voteview-brasil">
     <div class="project-accent" style="background:#f97316;"></div>
