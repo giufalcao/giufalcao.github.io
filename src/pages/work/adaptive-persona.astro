@@ -75,25 +75,7 @@ import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
 
   <div class="diagram-wrap">
     <div class="diagram-label">Per-turn pipeline</div>
-    <div class="mermaid">
-flowchart LR
-    MSG[Trainee message]:::input
-    ASSESS[LLM Assessor Service]:::llm
-    CLASS[classification\nconfidence score]:::data
-    STATE[State Engine]:::engine
-    BLOCK[Prompt Builder]:::engine
-    INJECT[System prompt\ninjection]:::inject
-    PERSONA[Persona LLM\nresponds]:::output
-
-    MSG --> ASSESS --> CLASS --> STATE --> BLOCK --> INJECT --> PERSONA
-
-    classDef input fill:#f1f5f9,stroke:#cbd5e1,color:#475569
-    classDef llm fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
-    classDef data fill:#1e293b,stroke:#334155,color:#64748b
-    classDef engine fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
-    classDef inject fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
-    classDef output fill:#f1f5f9,stroke:#cbd5e1,color:#475569
-    </div>
+    <img src="/diagrams/adaptive-persona.svg" alt="Adaptive persona per-turn pipeline" class="diagram-svg" />
   </div>
 
   <p>The emotional state config is generated at creation time by an ML service using Gemini 2.5 Pro structured output through a LangGraph workflow. A config flag propagates through six layers from the cloud function to the LLM and back. At runtime, all bot clients delegate emotional state processing to a shared NestJS service module.</p>

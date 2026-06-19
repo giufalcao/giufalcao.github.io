@@ -1,31 +1,5 @@
 ---
 import CaseStudyLayout from '../../layouts/CaseStudyLayout.astro';
-
-const mermaidDiagram = `flowchart LR
-    S3[(AWS S3\\nraw data)]:::storage
-    PARAM{parameter:\\ntraining or inference}:::param
-
-    DP_TR[Data Preparation\\ntraining rules]:::optimized
-    FZ_TR[Featurization\\ntraining rules]:::optimized
-    XG[XGBoost Training]:::model
-    MF[(MLflow Registry\\nChampion / Challenger)]:::registry
-
-    DP_INF[Data Preparation\\ninference rules]:::optimized
-    FZ_INF[Featurization\\ninference rules]:::optimized
-    PP[Post-processing\\nclinical rules]:::inference
-    OUT[(Output\\nRecommendations)]:::storage
-
-    S3 --> PARAM
-    PARAM -->|training| DP_TR --> FZ_TR --> XG --> MF
-    PARAM -->|inference| DP_INF --> FZ_INF --> PP --> OUT
-    MF -.->|promoted model| PP
-
-    classDef storage fill:#f1f5f9,stroke:#cbd5e1,color:#475569
-    classDef param fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
-    classDef optimized fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-    classDef model fill:#f1f5f9,stroke:#94a3b8,color:#475569
-    classDef registry fill:#d1fae5,stroke:#10b981,color:#065f46
-    classDef inference fill:#f1f5f9,stroke:#cbd5e1,color:#475569`;
 ---
 
 <CaseStudyLayout
@@ -78,7 +52,7 @@ const mermaidDiagram = `flowchart LR
 
   <div class="diagram-wrap">
     <div class="diagram-label">Pipeline overview</div>
-    <div class="mermaid" set:html={mermaidDiagram} />
+    <img src="/diagrams/pharma-pipeline.svg" alt="Pharmaceutical recommendation pipeline" class="diagram-svg" />
   </div>
   <p style="font-size:13px; color:#475569; margin-top:8px;">Blue: stages optimized in both paths. Data Prep and Featurization run differently depending on the mode. The promoted model from MLflow feeds the inference post-processing.</p>
 </div>
